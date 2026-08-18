@@ -50,6 +50,8 @@ struct GeneralSettingsView: View {
                 Toggle("Show Media Island", isOn: $settings.showMediaIsland)
                 Toggle("Show controls for 3 seconds when new media starts", isOn: $settings.showMediaStartPreview)
                     .disabled(!settings.showMediaIsland)
+                Toggle("Use artwork color gradient", isOn: $settings.showMediaArtworkGradient)
+                    .disabled(!settings.showMediaIsland)
             }
 
             SettingsCard {

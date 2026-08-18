@@ -352,7 +352,7 @@
 "Public repositories" = "Public repositories";
 "Followers" = "Followers";
 "Contributions in the last year" = "Contributions in the last year";
-"Version 1.0.2" = "Version 1.0.2";
+"Version 1.0.3" = "Version 1.0.3";
 "License" = "License";
 "Activate Dynamic Nook Pro offline" = "Activate Dynamic Nook Pro offline";
 "No active license" = "No active license";
@@ -396,3 +396,13 @@
 "This license was revoked." = "This license was revoked.";
 "This key is already active on another Mac." = "This key is already active on another Mac.";
 "Connect to the internet to validate this license." = "Connect to the internet to validate this license.";
+"Use artwork color gradient" = "Use artwork color gradient";
+"The highlighted overlay on your display shows the actual size while you drag." = "The highlighted overlay on your display shows the actual size while you drag.";
+"Show local Codex token usage" = "Show local Codex token usage";
+"Reads local Codex session logs only to extract usage metadata. Prompt content is never displayed." = "Reads local Codex session logs only to extract usage metadata. Prompt content is never displayed.";
+"Codex context" = "Codex context";
+"remaining" = "remaining";
+"Weekly limit" = "Weekly limit";
+"Codex usage unavailable" = "Codex usage unavailable";
+"Activation complete" = "Activation complete";
+"Dynamic Nook Pro is ready." = "Dynamic Nook Pro is ready.";

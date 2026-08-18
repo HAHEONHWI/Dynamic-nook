@@ -15,11 +15,13 @@ final class LicenseStore {
     private(set) var status: LicenseStatus = .unlicensed
     private(set) var errorMessage: String?
     private(set) var isActivating = false
+    private(set) var showsActivationSuccess = false
 
     private let deviceIdentity: DeviceIdentityService
     private let serverClient: LicenseServerClient
     private let tokenAccount = "dynamic-nook-license-v1"
     private let licenseKeyAccount = "dynamic-nook-license-key-v1"
+    private var activationSuccessTask: Task<Void, Never>?
 
     init(
         deviceIdentity: DeviceIdentityService = DeviceIdentityService(),
@@ -59,7 +61,12 @@ final class LicenseStore {
             verify(value, now: now, persist: true)
             return
         }
-        await activateOnline(value, now: now, preserveCurrentOnTransportFailure: false)
+        await activateOnline(
+            value,
+            now: now,
+            preserveCurrentOnTransportFailure: false,
+            showSuccess: true
+        )
     }
 
     func revalidateStoredLicense(now: Date = Date()) async {
@@ -68,10 +75,18 @@ final class LicenseStore {
               !isActivating else { return }
         isActivating = true
         defer { isActivating = false }
-        await activateOnline(licenseKey, now: now, preserveCurrentOnTransportFailure: true)
+        await activateOnline(
+            licenseKey,
+            now: now,
+            preserveCurrentOnTransportFailure: true,
+            showSuccess: false
+        )
     }
 
     func deactivate() {
+        activationSuccessTask?.cancel()
+        activationSuccessTask = nil
+        showsActivationSuccess = false
         KeychainSecretStore.delete(account: tokenAccount)
         KeychainSecretStore.delete(account: licenseKeyAccount)
         status = .unlicensed
@@ -88,6 +103,7 @@ final class LicenseStore {
             if persist { KeychainSecretStore.write(token, account: tokenAccount) }
             status = .active(payload)
             errorMessage = nil
+            if persist { presentActivationSuccess() }
         } catch {
             let message = error.localizedDescription
             status = .invalid(message)
@@ -98,7 +114,8 @@ final class LicenseStore {
     private func activateOnline(
         _ licenseKey: String,
         now: Date,
-        preserveCurrentOnTransportFailure: Bool
+        preserveCurrentOnTransportFailure: Bool,
+        showSuccess: Bool
     ) async {
         let previousStatus = status
         do {
@@ -117,6 +134,7 @@ final class LicenseStore {
             KeychainSecretStore.write(normalizedLicenseKey(licenseKey), account: licenseKeyAccount)
             status = .active(payload)
             errorMessage = nil
+            if showSuccess { presentActivationSuccess() }
         } catch let error as LicenseServerError {
             if preserveCurrentOnTransportFailure, !error.isDefinitiveRejection {
                 status = previousStatus
@@ -152,5 +170,16 @@ final class LicenseStore {
 
     private func normalizedLicenseKey(_ value: String) -> String {
         value.uppercased().filter { !$0.isWhitespace }
+    }
+
+    private func presentActivationSuccess() {
+        activationSuccessTask?.cancel()
+        showsActivationSuccess = true
+        activationSuccessTask = Task { @MainActor [weak self] in
+            try? await Task.sleep(for: .seconds(2.2))
+            guard !Task.isCancelled else { return }
+            self?.showsActivationSuccess = false
+            self?.activationSuccessTask = nil
+        }
     }
 }

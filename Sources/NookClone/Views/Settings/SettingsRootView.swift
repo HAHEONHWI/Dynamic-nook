@@ -61,7 +61,7 @@ struct SettingsRootView: View {
         case .general:
             GeneralSettingsView(environment: environment)
         case .appearance:
-            AppearanceSettingsView(settings: environment.settings)
+            AppearanceSettingsView(environment: environment)
         case .widgets:
             WidgetSettingsView(environment: environment)
         case .school:

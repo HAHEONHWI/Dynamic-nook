@@ -37,6 +37,7 @@ final class AppEnvironment {
     let marketService = MarketService()
     let launchAtLogin = LaunchAtLoginService()
     let previewService = PreviewService()
+    let notchSizeHighlight = NotchSizeHighlightController()
 
     init() {
         appStore.activePage = settings.resolvedOpeningPage

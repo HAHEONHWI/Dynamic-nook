@@ -42,11 +42,17 @@ private struct GitHubUserResponse: Decodable {
 final class DeveloperService {
     private(set) var snapshot: DeveloperSnapshot?
     private(set) var githubSnapshot: GitHubDeveloperSnapshot?
+    private(set) var codexUsageSnapshot: CodexUsageSnapshot?
     private(set) var isLoading = false
     private(set) var errorMessage: String?
     private let runner = ProcessRunner()
+    private let codexUsageService = CodexUsageService()
 
-    func refresh(repositoryPath: String, githubUsername: String = "") async {
+    func refresh(
+        repositoryPath: String,
+        githubUsername: String = "",
+        includeCodexUsage: Bool = false
+    ) async {
         isLoading = true
         defer { isLoading = false }
 
@@ -59,8 +65,13 @@ final class DeveloperService {
             resolvedUsername = await inferredGitHubUsername(path: path)
         }
         githubSnapshot = resolvedUsername.isEmpty ? nil : await loadGitHubSnapshot(username: resolvedUsername)
+        codexUsageSnapshot = includeCodexUsage ? await codexUsageService.loadLatest() : nil
 
-        if snapshot == nil && githubSnapshot == nil {
+        if snapshot == nil && githubSnapshot == nil && codexUsageSnapshot == nil {
+            if includeCodexUsage {
+                errorMessage = "Codex usage unavailable"
+                return
+            }
             errorMessage = resolvedUsername.isEmpty
                 ? "Choose a Git repository or enter a GitHub username in Settings."
                 : "GitHub status could not be refreshed."

@@ -37,6 +37,10 @@ struct NookRootView: View {
             NookMotion.animation(speed: environment.settings.animationSpeed, reduceMotion: reduceMotion),
             value: environment.appStore.nookState
         )
+        .animation(
+            NookMotion.animation(speed: environment.settings.animationSpeed, reduceMotion: reduceMotion),
+            value: environment.licenseStore.showsActivationSuccess
+        )
         .environment(\.locale, environment.settings.appLanguage.locale)
         .task {
             while !Task.isCancelled {
@@ -48,7 +52,10 @@ struct NookRootView: View {
 
     @ViewBuilder
     private var content: some View {
-        if !environment.licenseStore.isLicensed {
+        if environment.licenseStore.showsActivationSuccess {
+            LicenseActivationSuccessView()
+                .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
+        } else if !environment.licenseStore.isLicensed {
             switch environment.appStore.nookState {
             case .collapsed, .peeking:
                 CollapsedNookView(isPeeking: environment.appStore.nookState == .peeking)
@@ -68,6 +75,7 @@ struct NookRootView: View {
                 info: media,
                 store: environment.mediaStore,
                 isPeeking: environment.appStore.nookState == .peeking,
+                showsArtworkGradient: environment.settings.showMediaArtworkGradient,
                 onInteraction: { environment.panelController?.keepMediaControlsOpen() },
                 onCollapse: { environment.panelController?.collapseMediaPreview() }
             )

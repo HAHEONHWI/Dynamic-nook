@@ -49,6 +49,8 @@ final class NookPanelController {
     private var outsideClickLocalMonitor: Any?
     private var pointerGlobalMonitor: Any?
     private var pointerLocalMonitor: Any?
+    private var edgeScrollGlobalMonitor: Any?
+    private var edgeScrollLocalMonitor: Any?
     private var lastGestureDate = Date.distantPast
     private var lastPointerCheckDate = Date.distantPast
     private var lastMediaIdentity: String?
@@ -112,6 +114,7 @@ final class NookPanelController {
         }
         installOutsideClickMonitors()
         installPointerMonitors()
+        installTopEdgeScrollMonitors()
         observeGeometryChanges()
         updatePanelFrame(animated: false)
         panel.orderFrontRegardless()
@@ -190,6 +193,14 @@ final class NookPanelController {
             NSEvent.removeMonitor(pointerLocalMonitor)
             self.pointerLocalMonitor = nil
         }
+        if let edgeScrollGlobalMonitor {
+            NSEvent.removeMonitor(edgeScrollGlobalMonitor)
+            self.edgeScrollGlobalMonitor = nil
+        }
+        if let edgeScrollLocalMonitor {
+            NSEvent.removeMonitor(edgeScrollLocalMonitor)
+            self.edgeScrollLocalMonitor = nil
+        }
         panel.orderOut(nil)
     }
 
@@ -237,7 +248,7 @@ final class NookPanelController {
         appStore.activePage = settings.resolvedOpeningPage
     }
 
-    private func handleScroll(_ event: NSEvent) -> Bool {
+    private func handleScroll(_ event: NSEvent, isTopEdge: Bool = false) -> Bool {
         if NookPanelInteractionPolicy.shouldPreserveCalendarDateScroll(
             horizontalDelta: event.scrollingDeltaX,
             verticalDelta: event.scrollingDeltaY,
@@ -247,29 +258,19 @@ final class NookPanelController {
             return false
         }
 
-        let phase: NookScrollPhase
-        if event.phase.contains(.began) {
-            phase = .began
-        } else if event.phase.contains(.ended) {
-            phase = .ended
-        } else if event.phase.contains(.cancelled) {
-            phase = .cancelled
-        } else if event.phase.contains(.changed) {
-            phase = .changed
-        } else {
-            phase = .none
-        }
+        return handleScrollSample(
+            Self.scrollSample(from: event),
+            isTopEdge: isTopEdge,
+            locationInPanel: event.locationInWindow
+        )
+    }
 
-        guard let direction = scrollGesture.process(
-            NookScrollSample(
-                horizontal: event.scrollingDeltaX,
-                vertical: event.scrollingDeltaY,
-                isDirectionInverted: event.isDirectionInvertedFromDevice,
-                isPrecise: event.hasPreciseScrollingDeltas,
-                phase: phase,
-                isMomentum: !event.momentumPhase.isEmpty
-            )
-        ) else { return false }
+    private func handleScrollSample(
+        _ sample: NookScrollSample,
+        isTopEdge: Bool,
+        locationInPanel: CGPoint? = nil
+    ) -> Bool {
+        guard let direction = scrollGesture.process(sample) else { return false }
 
         guard Date().timeIntervalSince(lastGestureDate) > 0.25 else { return false }
 
@@ -293,9 +294,11 @@ final class NookPanelController {
             return true
         }
 
-        let location = event.locationInWindow
-        let isInNotchHeader = location.y >= panel.frame.height - 28 &&
-            abs(location.x - panel.frame.width / 2) <= currentCollapsedWidth / 2
+        let location = locationInPanel ?? CGPoint(x: panel.frame.width / 2, y: panel.frame.height)
+        let isInNotchHeader = isTopEdge || (
+            location.y >= panel.frame.height - 32 &&
+                abs(location.x - panel.frame.width / 2) <= currentCollapsedWidth / 2 + 12
+        )
 
         switch direction {
         case .down where settings.swipeDownToOpen && (appStore.nookState == .collapsed || appStore.nookState == .peeking):
@@ -321,6 +324,29 @@ final class NookPanelController {
 
         lastGestureDate = Date()
         return true
+    }
+
+    private static func scrollSample(from event: NSEvent) -> NookScrollSample {
+        let phase: NookScrollPhase
+        if event.phase.contains(.began) {
+            phase = .began
+        } else if event.phase.contains(.ended) {
+            phase = .ended
+        } else if event.phase.contains(.cancelled) {
+            phase = .cancelled
+        } else if event.phase.contains(.changed) {
+            phase = .changed
+        } else {
+            phase = .none
+        }
+        return NookScrollSample(
+            horizontal: event.scrollingDeltaX,
+            vertical: event.scrollingDeltaY,
+            isDirectionInverted: event.isDirectionInvertedFromDevice,
+            isPrecise: event.hasPreciseScrollingDeltas,
+            phase: phase,
+            isMomentum: !event.momentumPhase.isEmpty
+        )
     }
 
     private func handleDrop(_ urls: [URL]) -> Bool {
@@ -388,12 +414,40 @@ final class NookPanelController {
 
     private func installOutsideClickMonitors() {
         let mask: NSEvent.EventTypeMask = [.leftMouseDown, .rightMouseDown]
-        outsideClickGlobalMonitor = NSEvent.addGlobalMonitorForEvents(matching: mask) { [weak self] _ in
-            Task { @MainActor in self?.closeForOutsideClickIfNeeded() }
+        outsideClickGlobalMonitor = NSEvent.addGlobalMonitorForEvents(matching: mask) { [weak self] event in
+            Task { @MainActor in
+                guard let self else { return }
+                if event.type == .leftMouseDown,
+                   self.handleTopEdgeClickIfNeeded(at: NSEvent.mouseLocation) { return }
+                self.closeForOutsideClickIfNeeded()
+            }
         }
         outsideClickLocalMonitor = NSEvent.addLocalMonitorForEvents(matching: mask) { [weak self] event in
+            if let self,
+               event.type == .leftMouseDown,
+               event.window !== self.panel,
+               self.handleTopEdgeClickIfNeeded(at: NSEvent.mouseLocation) {
+                return nil
+            }
             self?.closeForOutsideClickIfNeeded()
             return event
+        }
+    }
+
+    private func installTopEdgeScrollMonitors() {
+        edgeScrollGlobalMonitor = NSEvent.addGlobalMonitorForEvents(matching: .scrollWheel) { [weak self] event in
+            let sample = Self.scrollSample(from: event)
+            Task { @MainActor in
+                guard let self,
+                      self.isInTopEdgeInputRegion(NSEvent.mouseLocation) else { return }
+                _ = self.handleScrollSample(sample, isTopEdge: true)
+            }
+        }
+        edgeScrollLocalMonitor = NSEvent.addLocalMonitorForEvents(matching: .scrollWheel) { [weak self] event in
+            guard let self,
+                  event.window !== self.panel,
+                  self.isInTopEdgeInputRegion(NSEvent.mouseLocation) else { return event }
+            return self.handleScrollSample(Self.scrollSample(from: event), isTopEdge: true) ? nil : event
         }
     }
 
@@ -421,6 +475,22 @@ final class NookPanelController {
               appStore.nookState.isOpen,
               !panel.frame.contains(NSEvent.mouseLocation) else { return }
         collapse()
+    }
+
+    private func handleTopEdgeClickIfNeeded(at point: CGPoint) -> Bool {
+        guard settings.clickToOpen, isInTopEdgeInputRegion(point) else { return false }
+        handleClick()
+        return true
+    }
+
+    private func isInTopEdgeInputRegion(_ point: CGPoint) -> Bool {
+        displayService.screens.contains { screen in
+            NookPanelInteractionPolicy.isInTopEdgeInputRegion(
+                point: point,
+                screenFrame: screen.frame,
+                notchWidth: currentCollapsedWidth
+            )
+        }
     }
 
     private func observeGeometryChanges() {

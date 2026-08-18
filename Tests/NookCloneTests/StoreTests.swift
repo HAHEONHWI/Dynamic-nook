@@ -87,6 +87,7 @@ final class StoreTests: XCTestCase {
         settings.appLanguage = .korean
         settings.showMediaIsland = false
         settings.showMediaStartPreview = false
+        settings.showMediaArtworkGradient = false
         settings.minimumNotchWidth = 240
         settings.maximumNotchWidth = 610
         settings.keepAwakeAllowDisplaySleep = false
@@ -94,6 +95,7 @@ final class StoreTests: XCTestCase {
         settings.keepAwakeScreenSaverMinutes = 45
         settings.clipboardHistoryEnabled = false
         settings.developerRepositoryPath = "/tmp/project"
+        settings.showCodexUsage = true
         settings.githubUsername = "octocat"
         settings.quickActions = [QuickAction(title: "Docs", target: "https://example.com")]
 
@@ -103,6 +105,7 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(restored.appLanguage, .korean)
         XCTAssertFalse(restored.showMediaIsland)
         XCTAssertFalse(restored.showMediaStartPreview)
+        XCTAssertFalse(restored.showMediaArtworkGradient)
         XCTAssertEqual(restored.minimumNotchWidth, 240)
         XCTAssertEqual(restored.maximumNotchWidth, 610)
         XCTAssertFalse(restored.keepAwakeAllowDisplaySleep)
@@ -110,6 +113,7 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(restored.keepAwakeScreenSaverMinutes, 45)
         XCTAssertFalse(restored.clipboardHistoryEnabled)
         XCTAssertEqual(restored.developerRepositoryPath, "/tmp/project")
+        XCTAssertTrue(restored.showCodexUsage)
         XCTAssertEqual(restored.githubUsername, "octocat")
         XCTAssertEqual(restored.quickActions, settings.quickActions)
     }

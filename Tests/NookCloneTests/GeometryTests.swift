@@ -41,6 +41,35 @@ final class GeometryTests: XCTestCase {
         XCTAssertEqual(result, CGRect(x: 460, y: 450, width: 480, height: 250))
     }
 
+    func testNotchSizeHighlightUsesActualTopCenteredDimensions() {
+        let values = NotchSizeHighlightGeometry.Values(
+            virtualWidth: 210,
+            minimumWidth: 280,
+            maximumWidth: 600,
+            expandedWidth: 1_400,
+            expandedHeight: 250,
+            cornerRadius: 34
+        )
+        let screen = CGRect(x: 100, y: -200, width: 900, height: 700)
+
+        let compact = NotchSizeHighlightGeometry.calculate(
+            kind: .mediaMinimum,
+            values: values,
+            screenFrame: screen,
+            collapsedHeight: 37
+        )
+        let expanded = NotchSizeHighlightGeometry.calculate(
+            kind: .expandedWidth,
+            values: values,
+            screenFrame: screen,
+            collapsedHeight: 37
+        )
+
+        XCTAssertEqual(compact.frame, CGRect(x: 410, y: 452, width: 280, height: 48))
+        XCTAssertEqual(expanded.frame, CGRect(x: 112, y: 250, width: 876, height: 250))
+        XCTAssertEqual(expanded.cornerRadius, 34)
+    }
+
     func testPlayingMediaStaysInsideCompactNotch() {
         let size = NookPanelLayout.size(
             state: .collapsed,

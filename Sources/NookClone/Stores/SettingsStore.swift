@@ -54,6 +54,7 @@ final class SettingsStore {
     var automaticallySwitchToTray: Bool { didSet { save(automaticallySwitchToTray, "automaticallySwitchToTray") } }
     var showMediaIsland: Bool { didSet { save(showMediaIsland, "showMediaIsland") } }
     var showMediaStartPreview: Bool { didSet { save(showMediaStartPreview, "showMediaStartPreview") } }
+    var showMediaArtworkGradient: Bool { didSet { save(showMediaArtworkGradient, "showMediaArtworkGradient") } }
     var enabledWidgets: [WidgetType] { didSet { saveWidgets() } }
     var nookPages: [NookPage] { didSet { saveNookPages() } }
     var widgetLayouts: [String: [String]] { didSet { save(widgetLayouts, "widgetLayouts") } }
@@ -84,6 +85,7 @@ final class SettingsStore {
     var clipboardHistoryEnabled: Bool { didSet { save(clipboardHistoryEnabled, "clipboardHistoryEnabled") } }
     var developerRepositoryPath: String { didSet { save(developerRepositoryPath, "developerRepositoryPath") } }
     var githubUsername: String { didSet { save(githubUsername, "githubUsername") } }
+    var showCodexUsage: Bool { didSet { save(showCodexUsage, "showCodexUsage") } }
     var quickActions: [QuickAction] { didSet { saveQuickActions() } }
 
     init(defaults: UserDefaults = .standard) {
@@ -125,6 +127,7 @@ final class SettingsStore {
             "automaticallySwitchToTray": true,
             "showMediaIsland": true,
             "showMediaStartPreview": true,
+            "showMediaArtworkGradient": true,
             "enabledWidgets": [String](),
             "nookPages": (try? JSONEncoder().encode([NookPage.nook1, .nook2, .nook3])) ?? Data(),
             "widgetLayouts": [String: [String]](),
@@ -153,6 +156,7 @@ final class SettingsStore {
             ,"clipboardHistoryEnabled": true
             ,"developerRepositoryPath": ""
             ,"githubUsername": ""
+            ,"showCodexUsage": false
             ,"quickActions": Data()
         ])
 
@@ -188,6 +192,7 @@ final class SettingsStore {
         automaticallySwitchToTray = defaults.bool(forKey: "automaticallySwitchToTray")
         showMediaIsland = defaults.bool(forKey: "showMediaIsland")
         showMediaStartPreview = defaults.bool(forKey: "showMediaStartPreview")
+        showMediaArtworkGradient = defaults.bool(forKey: "showMediaArtworkGradient")
         let rawWidgets = defaults.stringArray(forKey: "enabledWidgets") ?? []
         enabledWidgets = rawWidgets.compactMap(WidgetType.init(rawValue:))
         let storedNookPages = (try? defaults.data(forKey: "nookPages").flatMap { try JSONDecoder().decode([NookPage].self, from: $0) }) ?? [.nook1, .nook2, .nook3]
@@ -227,6 +232,7 @@ final class SettingsStore {
         clipboardHistoryEnabled = defaults.bool(forKey: "clipboardHistoryEnabled")
         developerRepositoryPath = defaults.string(forKey: "developerRepositoryPath") ?? ""
         githubUsername = defaults.string(forKey: "githubUsername") ?? ""
+        showCodexUsage = defaults.bool(forKey: "showCodexUsage")
         quickActions = (try? defaults.data(forKey: "quickActions").flatMap { try JSONDecoder().decode([QuickAction].self, from: $0) }) ?? []
 
         if defaults.integer(forKey: "layoutVersion") < 2 {
@@ -403,6 +409,7 @@ final class SettingsStore {
         automaticallySwitchToTray = true
         showMediaIsland = true
         showMediaStartPreview = true
+        showMediaArtworkGradient = true
         enabledWidgets = WidgetType.allCases
         widgetLayouts = [:]
         widgetCellSpans = Dictionary(uniqueKeysWithValues: WidgetType.allCases.map { ($0, $0.defaultCellSpan) })
@@ -434,6 +441,7 @@ final class SettingsStore {
         clipboardHistoryEnabled = true
         developerRepositoryPath = ""
         githubUsername = ""
+        showCodexUsage = false
         quickActions = []
     }
 

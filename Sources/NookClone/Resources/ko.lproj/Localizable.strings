@@ -352,7 +352,7 @@
 "Public repositories" = "공개 저장소";
 "Followers" = "팔로워";
 "Contributions in the last year" = "최근 1년 기여";
-"Version 1.0.2" = "버전 1.0.2";
+"Version 1.0.3" = "버전 1.0.3";
 "License" = "라이선스";
 "Activate Dynamic Nook Pro offline" = "Dynamic Nook Pro를 오프라인으로 활성화합니다";
 "No active license" = "활성 라이선스 없음";
@@ -396,3 +396,13 @@
 "This license was revoked." = "이 라이선스는 폐기되었습니다.";
 "This key is already active on another Mac." = "이 키는 이미 다른 Mac에서 활성화되어 있습니다.";
 "Connect to the internet to validate this license." = "라이선스를 확인하려면 인터넷에 연결하세요.";
+"Use artwork color gradient" = "앨범 아트 색상 그라데이션 사용";
+"The highlighted overlay on your display shows the actual size while you drag." = "드래그하는 동안 디스플레이의 강조 오버레이로 실제 크기를 확인할 수 있습니다.";
+"Show local Codex token usage" = "로컬 Codex 토큰 사용량 표시";
+"Reads local Codex session logs only to extract usage metadata. Prompt content is never displayed." = "사용량 메타데이터를 추출할 때만 로컬 Codex 세션 로그를 읽으며, 프롬프트 내용은 표시하지 않습니다.";
+"Codex context" = "Codex 컨텍스트";
+"remaining" = "남음";
+"Weekly limit" = "주간 한도";
+"Codex usage unavailable" = "Codex 사용량을 불러올 수 없음";
+"Activation complete" = "활성화 완료";
+"Dynamic Nook Pro is ready." = "Dynamic Nook Pro를 사용할 수 있습니다.";

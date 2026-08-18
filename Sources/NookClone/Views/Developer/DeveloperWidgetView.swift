@@ -12,9 +12,15 @@ struct DeveloperWidgetView: View {
                 if service.isLoading { ProgressView().controlSize(.mini) }
                 Button { refresh() } label: { Image(systemName: "arrow.clockwise") }.buttonStyle(.plain)
             }
+            if settings.showCodexUsage, let codex = service.codexUsageSnapshot {
+                codexStatus(codex)
+            }
             if let github = service.githubSnapshot { githubStatus(github) }
             if let local = service.snapshot { localStatus(local) }
-            if service.githubSnapshot == nil, service.snapshot == nil, !service.isLoading {
+            if service.githubSnapshot == nil,
+               service.snapshot == nil,
+               service.codexUsageSnapshot == nil,
+               !service.isLoading {
                 Spacer()
                 Text(LocalizedStringKey(service.errorMessage ?? "Choose a Git repository or enter a GitHub username in Settings."))
                     .font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: .infinity)
@@ -23,7 +29,42 @@ struct DeveloperWidgetView: View {
                 Text(LocalizedStringKey(error)).font(.system(size: 9)).foregroundStyle(.orange).lineLimit(1)
             }
         }
-        .task(id: "\(settings.developerRepositoryPath)|\(settings.githubUsername)") { await refreshAsync() }
+        .task(id: "\(settings.developerRepositoryPath)|\(settings.githubUsername)|\(settings.showCodexUsage)") {
+            await refreshAsync()
+        }
+    }
+
+    private func codexStatus(_ item: CodexUsageSnapshot) -> some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack(alignment: .firstTextBaseline) {
+                Label("Codex context", systemImage: "brain.head.profile")
+                    .font(.caption.weight(.semibold))
+                Spacer(minLength: 4)
+                VStack(alignment: .trailing, spacing: 0) {
+                    Text(item.remainingTokens, format: .number.notation(.compactName))
+                        .font(.caption.monospacedDigit().weight(.bold))
+                    Text("remaining")
+                        .font(.system(size: 8))
+                        .foregroundStyle(.secondary)
+                }
+            }
+            ProgressView(value: item.usedFraction)
+                .tint(.cyan)
+            HStack(spacing: 5) {
+                Text(item.usedTokens, format: .number.notation(.compactName))
+                Text("/")
+                Text(item.contextWindow, format: .number.notation(.compactName))
+                Spacer()
+                if let percent = item.weeklyUsedPercent {
+                    Text("Weekly limit")
+                    Text(percent / 100, format: .percent.precision(.fractionLength(0)))
+                }
+            }
+            .font(.system(size: 8).monospacedDigit())
+            .foregroundStyle(.secondary)
+        }
+        .padding(7)
+        .background(.white.opacity(0.055), in: RoundedRectangle(cornerRadius: 9, style: .continuous))
     }
 
     private func githubStatus(_ item: GitHubDeveloperSnapshot) -> some View {
@@ -86,6 +127,10 @@ struct DeveloperWidgetView: View {
 
     private func refresh() { Task { await refreshAsync() } }
     private func refreshAsync() async {
-        await service.refresh(repositoryPath: settings.developerRepositoryPath, githubUsername: settings.githubUsername)
+        await service.refresh(
+            repositoryPath: settings.developerRepositoryPath,
+            githubUsername: settings.githubUsername,
+            includeCodexUsage: settings.showCodexUsage
+        )
     }
 }

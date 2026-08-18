@@ -89,6 +89,19 @@ struct NookScrollGestureAccumulator: Sendable {
 }
 
 enum NookPanelInteractionPolicy {
+    static func isInTopEdgeInputRegion(
+        point: CGPoint,
+        screenFrame: CGRect,
+        notchWidth: CGFloat,
+        horizontalPadding: CGFloat = 12,
+        verticalTolerance: CGFloat = 4
+    ) -> Bool {
+        let isAtTopEdge = point.y >= screenFrame.maxY - verticalTolerance &&
+            point.y <= screenFrame.maxY + 1
+        let halfWidth = max(40, notchWidth / 2 + horizontalPadding)
+        return isAtTopEdge && abs(point.x - screenFrame.midX) <= halfWidth
+    }
+
     static func compactMediaSwipeAction(
         direction: NookGestureDirection,
         state: NookState,

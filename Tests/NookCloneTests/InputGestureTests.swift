@@ -3,6 +3,39 @@ import XCTest
 @testable import NookClone
 
 final class InputGestureTests: XCTestCase {
+    func testTopScreenEdgeAddsSafeHitPaddingAroundNotch() {
+        let screen = CGRect(x: 100, y: -200, width: 1_200, height: 900)
+
+        XCTAssertTrue(
+            NookPanelInteractionPolicy.isInTopEdgeInputRegion(
+                point: CGPoint(x: 700, y: 700),
+                screenFrame: screen,
+                notchWidth: 190
+            )
+        )
+        XCTAssertTrue(
+            NookPanelInteractionPolicy.isInTopEdgeInputRegion(
+                point: CGPoint(x: 806, y: 698),
+                screenFrame: screen,
+                notchWidth: 190
+            )
+        )
+        XCTAssertFalse(
+            NookPanelInteractionPolicy.isInTopEdgeInputRegion(
+                point: CGPoint(x: 820, y: 700),
+                screenFrame: screen,
+                notchWidth: 190
+            )
+        )
+        XCTAssertFalse(
+            NookPanelInteractionPolicy.isInTopEdgeInputRegion(
+                point: CGPoint(x: 700, y: 694),
+                screenFrame: screen,
+                notchWidth: 190
+            )
+        )
+    }
+
     func testSmallTrackpadDeltasAccumulateIntoDownGesture() {
         var accumulator = NookScrollGestureAccumulator(threshold: 30)
         XCTAssertNil(accumulator.process(sample(vertical: -8, phase: .began)))

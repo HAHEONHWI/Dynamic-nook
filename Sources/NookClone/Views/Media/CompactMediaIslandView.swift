@@ -5,6 +5,7 @@ struct CompactMediaIslandView: View {
     let info: MediaInfo
     let store: MediaStore
     let isPeeking: Bool
+    let showsArtworkGradient: Bool
     let onInteraction: () -> Void
     let onCollapse: () -> Void
     @State private var artworkAccent = Color.blue
@@ -25,11 +26,14 @@ struct CompactMediaIslandView: View {
         .opacity(info.isPlaying ? 1 : 0.68)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background {
-            LinearGradient(
-                colors: [artworkAccent.opacity(info.isPlaying ? 0.24 : 0.08), .clear],
-                startPoint: .leading,
-                endPoint: .trailing
-            )
+            if showsArtworkGradient {
+                LinearGradient(
+                    colors: [artworkAccent.opacity(info.isPlaying ? 0.24 : 0.08), .clear],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+                .transition(.opacity)
+            }
         }
         .simultaneousGesture(
             DragGesture(minimumDistance: 10)
@@ -47,6 +51,7 @@ struct CompactMediaIslandView: View {
             }
         }
         .animation(.easeOut(duration: 0.3), value: info.isPlaying)
+        .animation(.easeOut(duration: 0.3), value: showsArtworkGradient)
     }
 
     private var collapsedEdges: some View {
