@@ -8,6 +8,18 @@ struct AppearanceSettingsView: View {
 
         SettingsDetailContainer(title: "Appearance", subtitle: "Wide Nook proportions and motion") {
             SettingsCard {
+                NookSizePreview(
+                    virtualWidth: settings.virtualNotchWidth,
+                    minimumWidth: settings.minimumNotchWidth,
+                    maximumWidth: settings.maximumNotchWidth,
+                    expandedWidth: settings.expandedWidth,
+                    expandedHeight: settings.expandedHeight,
+                    cornerRadius: settings.cornerRadius,
+                    opacity: settings.opacity
+                )
+            }
+
+            SettingsCard {
                 slider("Virtual notch width", value: $settings.virtualNotchWidth, range: 150...260, suffix: "pt")
                 slider("Minimum notch width", value: $settings.minimumNotchWidth, range: 180...360, suffix: "pt")
                 slider("Maximum notch width", value: $settings.maximumNotchWidth, range: 360...720, suffix: "pt")

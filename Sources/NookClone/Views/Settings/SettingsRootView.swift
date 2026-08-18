@@ -9,6 +9,7 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
     case gestures = "Gestures"
     case display = "Display"
     case permissions = "Permissions"
+    case license = "License"
     case about = "About"
 
     var id: String { rawValue }
@@ -23,6 +24,7 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
         case .gestures: "hand.draw"
         case .display: "display"
         case .permissions: "lock.shield"
+        case .license: "key.horizontal"
         case .about: "info.circle"
         }
     }
@@ -72,6 +74,8 @@ struct SettingsRootView: View {
             DisplaySettingsView(environment: environment)
         case .permissions:
             PermissionsSettingsView(environment: environment)
+        case .license:
+            LicenseSettingsView(environment: environment)
         case .about:
             AboutSettingsView(settings: environment.settings)
         }

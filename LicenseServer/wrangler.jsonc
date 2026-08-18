@@ -1,0 +1,26 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "dynamic-nook-license",
+	"main": "src/index.js",
+	"compatibility_date": "2026-08-18",
+	"workers_dev": true,
+	"preview_urls": false,
+	"vars": {
+		"PRODUCT_ID": "dynamic-nook",
+		"TOKEN_TTL_SECONDS": "604800"
+	},
+	"secrets": {
+		"required": [
+			"ADMIN_API_TOKEN",
+			"SIGNING_KEY_JWK"
+		]
+	},
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "dynamic-nook-license",
+			"database_id": "a9892116-c9d8-45bb-a27f-5035518a3831",
+			"migrations_dir": "migrations"
+		}
+	]
+}

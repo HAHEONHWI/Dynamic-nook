@@ -3,6 +3,12 @@ import XCTest
 @testable import NookClone
 
 final class GeometryTests: XCTestCase {
+    func testNookMotionDurationClampsAnimationSpeed() {
+        XCTAssertEqual(NookMotion.duration(speed: 1), 0.42, accuracy: 0.0001)
+        XCTAssertEqual(NookMotion.duration(speed: 0.1), 0.42 / 0.65, accuracy: 0.0001)
+        XCTAssertEqual(NookMotion.duration(speed: 9), 0.42 / 1.5, accuracy: 0.0001)
+    }
+
     func testVirtualNotchFallback() {
         let metrics = ScreenMetrics(
             frame: CGRect(x: 0, y: 0, width: 1920, height: 1080),

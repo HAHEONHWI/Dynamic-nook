@@ -7,6 +7,7 @@ LEGACY_APP_NAME="NookClone"
 BUNDLE_ID="dev.nookclone.app"
 MIN_SYSTEM_VERSION="14.6"
 SIGN_IDENTITY="${SIGN_IDENTITY:-}"
+LICENSE_SERVER_URL="${LICENSE_SERVER_URL:-https://dynamic-nook-license.2010haheon.workers.dev}"
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="$PROJECT_ROOT/dist"
 APP_BUNDLE="$DIST_DIR/$APP_NAME.app"
@@ -44,7 +45,7 @@ pkill -x "$APP_NAME" >/dev/null 2>&1 || true
 pkill -x "$LEGACY_APP_NAME" >/dev/null 2>&1 || true
 
 cd "$PROJECT_ROOT"
-xcrun swift build -c release
+xcrun swift build -c release --product "$APP_NAME"
 BUILD_BINARY="$(xcrun swift build -c release --show-bin-path)/$APP_NAME"
 
 rm -rf "$APP_BUNDLE" "$LEGACY_APP_BUNDLE"
@@ -107,9 +108,9 @@ cat >"$INFO_PLIST" <<PLIST
   <key>CFBundleLocalizations</key>
   <array><string>en</string><string>ko</string></array>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>1.0</string>
-  <key>CFBundleVersion</key><string>100</string>
-  <key>CFBundleGetInfoString</key><string>Dynamic Nook 1.0 Beta</string>
+  <key>CFBundleShortVersionString</key><string>1.0.2</string>
+  <key>CFBundleVersion</key><string>102</string>
+  <key>CFBundleGetInfoString</key><string>Dynamic Nook 1.0.2</string>
   <key>LSMinimumSystemVersion</key><string>$MIN_SYSTEM_VERSION</string>
   <key>NSPrincipalClass</key><string>NSApplication</string>
   <key>NSCalendarsFullAccessUsageDescription</key><string>nook3h shows your upcoming events in the notch calendar widget.</string>
@@ -120,6 +121,10 @@ cat >"$INFO_PLIST" <<PLIST
 </dict>
 </plist>
 PLIST
+
+if [[ -n "$LICENSE_SERVER_URL" ]]; then
+  plutil -insert DynamicNookLicenseServerURL -string "$LICENSE_SERVER_URL" "$INFO_PLIST"
+fi
 
 codesign --force --deep --sign "$SIGN_IDENTITY" "$APP_BUNDLE"
 

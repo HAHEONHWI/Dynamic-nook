@@ -41,6 +41,7 @@ final class NookPanelController {
     private let displayService: DisplayService
     private let sharingService: SharingService
     private let haptics: HapticService
+    private let licenseStore: LicenseStore
     private var hoverTask: Task<Void, Never>?
     private var mediaPreviewTask: Task<Void, Never>?
     private var dropExitTask: Task<Void, Never>?
@@ -55,6 +56,7 @@ final class NookPanelController {
     private var isPointerInsidePanel = false
     private var scrollGesture = NookScrollGestureAccumulator()
     private var currentCollapsedWidth = AppConstants.virtualNotchSize.width
+    private var wasLicensed = false
 
     init(environment: AppEnvironment) {
         panel = NookPanel()
@@ -66,6 +68,12 @@ final class NookPanelController {
         displayService = environment.displayService
         sharingService = environment.sharingService
         haptics = environment.haptics
+        licenseStore = environment.licenseStore
+        wasLicensed = licenseStore.isLicensed
+
+        if !licenseStore.isLicensed {
+            appStore.nookState = .expanded
+        }
 
         let rootView = NookRootView(
             environment: environment,
@@ -110,6 +118,10 @@ final class NookPanelController {
     }
 
     func open(widget: WidgetType? = nil) {
+        guard licenseStore.isLicensed else {
+            appStore.nookState = .expanded
+            return
+        }
         cancelAutomaticMediaPreview()
         preparePageForOpening()
         appStore.open(widget: widget)
@@ -117,12 +129,20 @@ final class NookPanelController {
     }
 
     func openTray() {
+        guard licenseStore.isLicensed else {
+            appStore.nookState = .expanded
+            return
+        }
         cancelAutomaticMediaPreview()
         appStore.openTray()
         haptics.perform(enabled: settings.enableHaptics)
     }
 
     func toggle() {
+        guard licenseStore.isLicensed else {
+            appStore.toggle()
+            return
+        }
         cancelAutomaticMediaPreview()
         if appStore.nookState == .collapsed || appStore.nookState == .peeking {
             preparePageForOpening()
@@ -419,9 +439,16 @@ final class NookPanelController {
             _ = settings.showMediaStartPreview
             _ = liveActions.currentAction
             _ = mediaStore.info
+            _ = licenseStore.isLicensed
         } onChange: { [weak self] in
             Task { @MainActor in
                 guard let self else { return }
+                let isLicensed = self.licenseStore.isLicensed
+                if self.wasLicensed, !isLicensed {
+                    self.cancelAutomaticMediaPreview()
+                    self.appStore.nookState = .expanded
+                }
+                self.wasLicensed = isLicensed
                 self.handleMediaPresentationTransition()
                 self.updatePanelFrame(animated: true)
                 self.observeGeometryChanges()
@@ -521,8 +548,8 @@ final class NookPanelController {
             return
         }
         NSAnimationContext.runAnimationGroup { context in
-            context.duration = 0.48 / min(max(settings.animationSpeed, 0.65), 1.5)
-            context.timingFunction = CAMediaTimingFunction(controlPoints: 0.18, 0.82, 0.22, 1)
+            context.duration = NookMotion.duration(speed: settings.animationSpeed)
+            context.timingFunction = NookMotion.timingFunction
             panel.animator().setFrame(targetFrame, display: true)
         }
     }

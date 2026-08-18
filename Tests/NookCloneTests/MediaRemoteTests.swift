@@ -46,4 +46,13 @@ final class MediaRemoteTests: XCTestCase {
         let diff = #"{"type":"data","diff":true,"payload":{"title":"Partial"}}"#
         XCTAssertNil(MediaRemoteAdapterBridge.decodeMedia(from: Data(diff.utf8)))
     }
+
+    func testLegacyStreamCleanupPatternEscapesBundlePath() {
+        let pattern = MediaRemoteAdapterBridge.legacyStreamPattern(
+            scriptPath: "/Applications/Dynamic Nook.app/Contents/Resources/Media.Remote/mediaremote-adapter.pl"
+        )
+        let command = "/usr/bin/perl /Applications/Dynamic Nook.app/Contents/Resources/Media.Remote/mediaremote-adapter.pl /tmp/MediaRemoteAdapter.framework stream --no-diff"
+        XCTAssertNotNil(command.range(of: pattern, options: .regularExpression))
+        XCTAssertNil("/usr/bin/perl /tmp/mediaremote-adapter.pl stream".range(of: pattern, options: .regularExpression))
+    }
 }

@@ -34,7 +34,7 @@ struct NookRootView: View {
             return .handled
         }
         .animation(
-            reduceMotion ? .easeOut(duration: 0.18) : .spring(response: 0.54, dampingFraction: 0.86),
+            NookMotion.animation(speed: environment.settings.animationSpeed, reduceMotion: reduceMotion),
             value: environment.appStore.nookState
         )
         .environment(\.locale, environment.settings.appLanguage.locale)
@@ -48,7 +48,16 @@ struct NookRootView: View {
 
     @ViewBuilder
     private var content: some View {
-        if environment.appStore.nookState == .collapsed,
+        if !environment.licenseStore.isLicensed {
+            switch environment.appStore.nookState {
+            case .collapsed, .peeking:
+                CollapsedNookView(isPeeking: environment.appStore.nookState == .peeking)
+                    .transition(.opacity.combined(with: .scale(scale: 0.97, anchor: .top)))
+            case .expanded, .tray:
+                LicenseActivationNookView(environment: environment)
+                    .transition(.opacity.combined(with: .scale(scale: 0.98, anchor: .top)))
+            }
+        } else if environment.appStore.nookState == .collapsed,
            let action = environment.liveActions.currentAction {
             LiveActionView(action: action)
         } else if (environment.appStore.nookState == .collapsed || environment.appStore.nookState == .peeking),
@@ -64,21 +73,21 @@ struct NookRootView: View {
             )
             .transition(
                 .asymmetric(
-                    insertion: .move(edge: .top).combined(with: .opacity),
-                    removal: .move(edge: .top).combined(with: .opacity)
+                    insertion: .opacity.combined(with: .scale(scale: 0.94, anchor: .top)),
+                    removal: .opacity.combined(with: .scale(scale: 0.98, anchor: .top))
                 )
             )
         } else {
             switch environment.appStore.nookState {
             case .collapsed, .peeking:
                 CollapsedNookView(isPeeking: environment.appStore.nookState == .peeking)
-                    .transition(.opacity.combined(with: .scale(scale: 0.94)))
+                    .transition(.opacity.combined(with: .scale(scale: 0.97, anchor: .top)))
             case .expanded:
                 ExpandedNookView(environment: environment)
-                    .transition(.opacity.combined(with: .offset(y: -8)))
+                    .transition(.opacity.combined(with: .scale(scale: 0.975, anchor: .top)))
             case .tray:
                 TrayView(environment: environment)
-                    .transition(.opacity.combined(with: .scale(scale: 0.98, anchor: .top)))
+                    .transition(.opacity.combined(with: .scale(scale: 0.975, anchor: .top)))
             }
         }
     }

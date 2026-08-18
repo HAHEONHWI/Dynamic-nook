@@ -13,7 +13,7 @@ struct CompactMediaIslandView: View {
         Group {
             if isPeeking {
                 controls
-                    .transition(.move(edge: .top).combined(with: .opacity))
+                    .transition(.opacity.combined(with: .scale(scale: 0.96, anchor: .top)))
             } else {
                 collapsedEdges
                     .transition(.opacity)
@@ -42,8 +42,11 @@ struct CompactMediaIslandView: View {
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Now playing \(info.title) by \(info.artist)")
         .task(id: info.artworkData) {
-            artworkAccent = Self.averageArtworkColor(from: info.artworkData) ?? .blue
+            withAnimation(.easeOut(duration: 0.45)) {
+                artworkAccent = Self.averageArtworkColor(from: info.artworkData) ?? .blue
+            }
         }
+        .animation(.easeOut(duration: 0.3), value: info.isPlaying)
     }
 
     private var collapsedEdges: some View {
@@ -208,7 +211,7 @@ private struct AnimatedWaveformView: View {
     let phaseSeed: Int
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 20.0, paused: !isPlaying)) { context in
+        TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: !isPlaying)) { context in
             HStack(alignment: .center, spacing: 2) {
                 ForEach(0..<5, id: \.self) { index in
                     Capsule(style: .continuous)
@@ -224,19 +227,19 @@ private struct AnimatedWaveformView: View {
                 }
             }
             .frame(maxHeight: .infinity)
-            .animation(.linear(duration: 0.08), value: context.date)
         }
         .opacity(isPlaying ? 1 : 0.45)
         .accessibilityHidden(true)
     }
 
     private func barHeight(index: Int, at date: Date) -> CGFloat {
-        guard isPlaying else { return [5, 9, 13, 8, 6][index] }
+        guard isPlaying else { return [4, 6, 8, 6, 4][index] }
         let time = date.timeIntervalSinceReferenceDate
         let seed = Double(abs(phaseSeed % 997)) / 997
-        let primary = sin(time * 3.8 + Double(index) * 1.23 + seed * 4)
-        let secondary = sin(time * 2.1 + Double(index) * 0.71 + seed * 7)
-        let energy = min(max((primary * 0.62 + secondary * 0.38 + 1) / 2, 0), 1)
-        return 4 + CGFloat(energy) * 7
+        let primary = sin(time * 2.8 + Double(index) * 1.18 + seed * 4)
+        let secondary = sin(time * 1.45 + Double(index) * 0.68 + seed * 7)
+        let energy = min(max((primary * 0.58 + secondary * 0.42 + 1) / 2, 0), 1)
+        let centerWeight = 1 - abs(Double(index) - 2) * 0.08
+        return 4 + CGFloat(energy * centerWeight) * 6
     }
 }

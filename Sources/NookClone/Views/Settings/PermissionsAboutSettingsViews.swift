@@ -132,7 +132,7 @@ struct AboutSettingsView: View {
                         .font(.system(size: 42))
                     VStack(alignment: .leading, spacing: 3) {
                         Text("Dynamic Nook").font(.title2.bold())
-                        Text("Version 1.0 Beta")
+                        Text("Version 1.0.2")
                             .font(.subheadline.weight(.semibold))
                             .foregroundStyle(.secondary)
                         Text("Independent native macOS notch utility")

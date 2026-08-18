@@ -1,6 +1,10 @@
 .build/
 dist/
+dist-admin/
 .swiftpm/
 .codex/
 .DS_Store
 *.xcuserstate
+.dev.vars*
+.env*
+LicenseServer/.wrangler/

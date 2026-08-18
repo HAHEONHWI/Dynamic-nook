@@ -6,6 +6,7 @@ final class AppEnvironment {
     private var settingsWindowController: NSWindowController?
     let appStore = AppStore()
     let settings = SettingsStore()
+    let licenseStore = LicenseStore()
     let trayStore = TrayStore()
     let notesStore = NotesStore()
     let liveActions = LiveActionManager()

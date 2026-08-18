@@ -16,15 +16,17 @@ final class SystemMediaService: MediaProviding {
         self.bridge = bridge
         self.adapter = adapter
         self.fallback = fallback
-        adapter.start()
     }
 
     func currentTrack() async throws -> MediaInfo? {
-        if adapter.isAvailable, let media = await adapter.currentMedia() {
+        // Read in-process first. The compatibility adapter is intentionally
+        // one-shot only so Dynamic Nook never keeps a MediaRemote notification
+        // client alive that could interfere with headset media-key routing.
+        if bridge.isAvailable, let media = bridge.currentMedia() {
             lastMedia = media
             return media
         }
-        if bridge.isAvailable, let media = bridge.currentMedia() {
+        if adapter.isAvailable, let media = await adapter.currentMedia() {
             lastMedia = media
             return media
         }
@@ -40,19 +42,23 @@ final class SystemMediaService: MediaProviding {
     func previous() async throws { try await send(.previousTrack, fallback: fallback.previous) }
 
     func seek(to position: TimeInterval) async throws {
+        if bridge.isAvailable {
+            do {
+                try bridge.seek(to: position)
+                return
+            } catch {
+                // Fall through to the compatibility adapter, then Apple Music.
+            }
+        }
         if adapter.isAvailable {
             do {
                 try await adapter.seek(to: position)
                 return
             } catch {
-                // Fall through to direct MediaRemote, then Apple Music.
+                // Fall through to Apple Music.
             }
         }
-        if bridge.isAvailable {
-            try bridge.seek(to: position)
-        } else {
-            try await fallback.seek(to: position)
-        }
+        try await fallback.seek(to: position)
     }
 
     func openPlayer() {
@@ -72,23 +78,22 @@ final class SystemMediaService: MediaProviding {
         _ command: MediaRemoteCommand,
         fallback fallbackOperation: () async throws -> Void
     ) async throws {
-        if adapter.isAvailable {
-            do {
-                try await adapter.send(command)
-                return
-            } catch {
-                // Fall through to direct MediaRemote, then Apple Music.
-            }
-        }
         if bridge.isAvailable {
             do {
                 try bridge.send(command)
                 return
             } catch {
-                try await fallbackOperation()
+                // Fall through to the compatibility adapter, then Apple Music.
             }
-        } else {
-            try await fallbackOperation()
         }
+        if adapter.isAvailable {
+            do {
+                try await adapter.send(command)
+                return
+            } catch {
+                // Fall through to Apple Music.
+            }
+        }
+        try await fallbackOperation()
     }
 }

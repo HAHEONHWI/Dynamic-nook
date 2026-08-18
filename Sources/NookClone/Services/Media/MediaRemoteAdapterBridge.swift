@@ -75,18 +75,18 @@ final class MediaRemoteAdapterBridge {
 
     private let locations: Locations?
     private let runner: ProcessRunner
-    private let lineBuffer = AdapterLineBuffer()
-    private var streamProcess: Process?
-    private var outputPipe: Pipe?
-    private var errorPipe: Pipe?
     private var latestPayload: Payload?
-    private var didPerformInitialFetch = false
+    private var lastFetchDate: Date?
+    private let minimumFetchInterval: TimeInterval = 1
 
     var isAvailable: Bool { locations != nil }
 
     init(bundle: Bundle = .main, runner: ProcessRunner = ProcessRunner()) {
         locations = Self.locations(in: bundle)
         self.runner = runner
+        if let locations {
+            Self.terminateLegacyStreamProcesses(scriptURL: locations.scriptURL)
+        }
     }
 
     init(locations: Locations?, runner: ProcessRunner = ProcessRunner()) {
@@ -95,13 +95,13 @@ final class MediaRemoteAdapterBridge {
     }
 
     func currentMedia() async -> MediaInfo? {
-        start()
-        if latestPayload == nil, !didPerformInitialFetch {
-            didPerformInitialFetch = true
-            await fetchInitialMedia()
+        let now = Date()
+        if lastFetchDate.map({ now.timeIntervalSince($0) >= minimumFetchInterval }) != false {
+            lastFetchDate = now
+            await fetchCurrentMedia()
         }
         return latestPayload?.mediaInfo(
-            at: Date(),
+            at: now,
             playerName: playerName(for: latestPayload?.bundleIdentifier)
         )
     }
@@ -115,65 +115,9 @@ final class MediaRemoteAdapterBridge {
         try await run(arguments: ["seek", String(microseconds)])
     }
 
-    func start() {
-        guard streamProcess == nil, let locations else { return }
-
-        let process = Process()
-        let outputPipe = Pipe()
-        let errorPipe = Pipe()
-        process.executableURL = URL(fileURLWithPath: "/usr/bin/perl")
-        process.arguments = [
-            locations.scriptURL.path,
-            locations.frameworkURL.path,
-            "stream",
-            "--no-diff",
-            "--debounce=100"
-        ]
-        process.standardOutput = outputPipe
-        process.standardError = errorPipe
-
-        outputPipe.fileHandleForReading.readabilityHandler = { [weak self, lineBuffer] handle in
-            let data = handle.availableData
-            guard !data.isEmpty else {
-                handle.readabilityHandler = nil
-                return
-            }
-            let lines = lineBuffer.append(data)
-            guard !lines.isEmpty else { return }
-            Task { @MainActor [weak self] in
-                lines.forEach { self?.consume($0) }
-            }
-        }
-        errorPipe.fileHandleForReading.readabilityHandler = { handle in
-            if handle.availableData.isEmpty { handle.readabilityHandler = nil }
-        }
-        process.terminationHandler = { [weak self] _ in
-            Task { @MainActor [weak self] in
-                self?.streamProcess = nil
-                self?.outputPipe = nil
-                self?.errorPipe = nil
-            }
-        }
-
-        do {
-            try process.run()
-            streamProcess = process
-            self.outputPipe = outputPipe
-            self.errorPipe = errorPipe
-        } catch {
-            outputPipe.fileHandleForReading.readabilityHandler = nil
-            errorPipe.fileHandleForReading.readabilityHandler = nil
-        }
-    }
-
     func stop() {
-        outputPipe?.fileHandleForReading.readabilityHandler = nil
-        errorPipe?.fileHandleForReading.readabilityHandler = nil
-        if let streamProcess, streamProcess.isRunning { streamProcess.terminate() }
-        streamProcess = nil
-        outputPipe = nil
-        errorPipe = nil
-        lineBuffer.removeAll()
+        latestPayload = nil
+        lastFetchDate = nil
     }
 
     static func decodeMedia(
@@ -184,7 +128,7 @@ final class MediaRemoteAdapterBridge {
         decodePayload(from: data)?.mediaInfo(at: date, playerName: playerName)
     }
 
-    private func fetchInitialMedia() async {
+    private func fetchCurrentMedia() async {
         guard let locations else { return }
         guard let result = try? await runner.run(
             executable: URL(fileURLWithPath: "/usr/bin/perl"),
@@ -192,13 +136,10 @@ final class MediaRemoteAdapterBridge {
                 locations.scriptURL.path,
                 locations.frameworkURL.path,
                 "get",
-                "--now",
-                "--no-artwork"
+                "--now"
             ]
         ), result.exitCode == 0 else { return }
-        if let payload = Self.decodePayload(from: Data(result.output.utf8)) {
-            latestPayload = payload
-        }
+        latestPayload = Self.decodePayload(from: Data(result.output.utf8))
     }
 
     private func run(arguments: [String]) async throws {
@@ -208,16 +149,6 @@ final class MediaRemoteAdapterBridge {
             arguments: [locations.scriptURL.path, locations.frameworkURL.path] + arguments
         )
         guard result.exitCode == 0 else { throw MediaRemoteAdapterError.commandFailed }
-    }
-
-    private func consume(_ line: Data) {
-        if line == Data("null".utf8) {
-            latestPayload = nil
-            return
-        }
-        if let payload = Self.decodePayload(from: line) {
-            latestPayload = payload
-        }
     }
 
     private func playerName(for bundleIdentifier: String?) -> String {
@@ -262,31 +193,20 @@ final class MediaRemoteAdapterBridge {
               ) else { return nil }
         return Locations(scriptURL: scriptURL, frameworkURL: frameworkURL)
     }
-}
 
-private final class AdapterLineBuffer: @unchecked Sendable {
-    private let lock = NSLock()
-    private var buffer = Data()
-
-    func append(_ data: Data) -> [Data] {
-        lock.lock()
-        defer { lock.unlock() }
-        buffer.append(data)
-
-        var lines: [Data] = []
-        let newline = Data([0x0A])
-        while let range = buffer.range(of: newline) {
-            let line = buffer.subdata(in: buffer.startIndex..<range.lowerBound)
-            buffer.removeSubrange(buffer.startIndex..<range.upperBound)
-            if !line.isEmpty { lines.append(line) }
-        }
-        return lines
+    static func legacyStreamPattern(scriptPath: String) -> String {
+        let escapedPath = NSRegularExpression.escapedPattern(for: scriptPath)
+        return "\(escapedPath).*[[:space:]]stream([[:space:]]|$)"
     }
 
-    func removeAll() {
-        lock.lock()
-        buffer.removeAll(keepingCapacity: false)
-        lock.unlock()
+    private static func terminateLegacyStreamProcesses(scriptURL: URL) {
+        guard FileManager.default.isExecutableFile(atPath: "/usr/bin/pkill") else { return }
+        let process = Process()
+        process.executableURL = URL(fileURLWithPath: "/usr/bin/pkill")
+        process.arguments = ["-TERM", "-f", legacyStreamPattern(scriptPath: scriptURL.path)]
+        process.standardOutput = FileHandle.nullDevice
+        process.standardError = FileHandle.nullDevice
+        try? process.run()
     }
 }
 

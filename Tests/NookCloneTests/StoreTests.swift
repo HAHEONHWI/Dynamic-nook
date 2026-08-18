@@ -200,6 +200,8 @@ final class StoreTests: XCTestCase {
         let defaults = UserDefaults(suiteName: suite)!
         defer { defaults.removePersistentDomain(forName: suite) }
         let settings = SettingsStore(defaults: defaults)
+        settings.setWidget(.mirror, enabled: true)
+        settings.setWidget(.notes, enabled: true)
         settings.setCellSpan(5, for: .notes)
         settings.moveWidget(.notes, offset: -1)
 
@@ -210,6 +212,22 @@ final class StoreTests: XCTestCase {
             restored.enabledWidgets.firstIndex(of: .notes)!,
             restored.enabledWidgets.firstIndex(of: .mirror)!
         )
+    }
+
+    func testFreshInstallStartsWithEveryNookWidgetDisabled() {
+        let suite = "NookFreshWidgetTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = SettingsStore(defaults: defaults)
+
+        XCTAssertTrue(settings.enabledWidgets.isEmpty)
+        XCTAssertTrue(settings.nookPages.allSatisfy { settings.widgets(for: $0).isEmpty })
+
+        settings.setWidget(.weather, enabled: true, page: settings.nookPages[1])
+        let restored = SettingsStore(defaults: defaults)
+        XCTAssertEqual(restored.widgets(for: restored.nookPages[1]), [.weather])
+        XCTAssertTrue(restored.widgets(for: .nook1).isEmpty)
     }
 
     func testProductivityWidgetMigrationPreservesExistingLayoutAndSettings() {

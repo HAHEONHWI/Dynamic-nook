@@ -87,6 +87,10 @@ final class SettingsStore {
     var quickActions: [QuickAction] { didSet { saveQuickActions() } }
 
     init(defaults: UserDefaults = .standard) {
+        let isFreshWidgetConfiguration = defaults.object(forKey: "enabledWidgets") == nil
+            && defaults.object(forKey: "widgetLayouts") == nil
+            && defaults.object(forKey: "additionalWidgetLayouts") == nil
+            && defaults.object(forKey: "layoutVersion") == nil
         self.defaults = defaults
         defaults.register(defaults: [
             "appLanguage": AppLanguage.system.rawValue,
@@ -121,7 +125,7 @@ final class SettingsStore {
             "automaticallySwitchToTray": true,
             "showMediaIsland": true,
             "showMediaStartPreview": true,
-            "enabledWidgets": WidgetType.allCases.map(\.rawValue),
+            "enabledWidgets": [String](),
             "nookPages": (try? JSONEncoder().encode([NookPage.nook1, .nook2, .nook3])) ?? Data(),
             "widgetLayouts": [String: [String]](),
             "showWidgetScrollIndicator": false,
@@ -281,6 +285,11 @@ final class SettingsStore {
             for widget in additions where !enabledWidgets.contains(widget) { enabledWidgets.append(widget) }
             appendWidgetsToPrimaryLayoutIfPresent(additions)
             defaults.set(1, forKey: "desktopUtilityWidgetsLayoutVersion")
+        }
+
+        if isFreshWidgetConfiguration {
+            enabledWidgets = []
+            widgetLayouts = Dictionary(uniqueKeysWithValues: nookPages.map { ($0.id, []) })
         }
     }
 

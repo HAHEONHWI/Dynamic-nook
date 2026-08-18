@@ -4,7 +4,7 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 DIST_DIR="$PROJECT_ROOT/dist"
 SOURCE_APP="$DIST_DIR/nook3h.app"
-DMG_NAME="Dynamic-Nook-1.0-Beta.dmg"
+DMG_NAME="Dynamic-Nook-1.0.2.dmg"
 VOLUME_NAME="Dynamic Nook"
 FINAL_DMG="$DIST_DIR/$DMG_NAME"
 RW_DMG="$DIST_DIR/Dynamic-Nook-rw.dmg"

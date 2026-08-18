@@ -6,12 +6,14 @@ let package = Package(
     defaultLocalization: "en",
     platforms: [.macOS("14.6")],
     products: [
-        .executable(name: "nook3h", targets: ["NookClone"])
+        .executable(name: "nook3h", targets: ["NookClone"]),
+        .executable(name: "DynamicNookLicenseIssuer", targets: ["DynamicNookLicenseIssuer"]),
+        .executable(name: "DynamicNookLicenseSecretExporter", targets: ["DynamicNookLicenseSecretExporter"])
     ],
     targets: [
         .executableTarget(
             name: "NookClone",
-            dependencies: ["MediaRemoteBridgeC", "SystemDisplayBridgeC"],
+            dependencies: ["LicenseCore", "MediaRemoteBridgeC", "SystemDisplayBridgeC"],
             path: "Sources/NookClone",
             resources: [.process("Resources")],
             linkerSettings: [
@@ -23,6 +25,25 @@ let package = Package(
                 .linkedFramework("AudioToolbox"),
                 .linkedFramework("ApplicationServices")
             ]
+        ),
+        .target(
+            name: "LicenseCore",
+            path: "Sources/LicenseCore"
+        ),
+        .executableTarget(
+            name: "DynamicNookLicenseIssuer",
+            dependencies: ["LicenseCore"],
+            path: "Tools/DynamicNookLicenseIssuer",
+            resources: [.process("Resources")],
+            linkerSettings: [
+                .linkedFramework("Security")
+            ]
+        ),
+        .executableTarget(
+            name: "DynamicNookLicenseSecretExporter",
+            dependencies: ["LicenseCore"],
+            path: "Tools/DynamicNookLicenseSecretExporter",
+            linkerSettings: [.linkedFramework("Security")]
         ),
         .target(
             name: "MediaRemoteBridgeC",
@@ -43,7 +64,7 @@ let package = Package(
         ),
         .testTarget(
             name: "NookCloneTests",
-            dependencies: ["NookClone"],
+            dependencies: ["LicenseCore", "NookClone"],
             path: "Tests/NookCloneTests"
         )
     ]

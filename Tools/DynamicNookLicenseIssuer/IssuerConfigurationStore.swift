@@ -1,10 +1,22 @@
 import Foundation
 import Security
 
-enum KeychainSecretStore {
-    private static let service = "dev.nookclone.app"
+enum IssuerConfigurationStore {
+    private static let service = "dev.dynamicnook.licenseissuer"
+    private static let adminTokenAccount = "license-server-admin-token-v1"
+    private static let serverURLKey = "licenseServerURL"
 
-    static func read(account: String) -> String? {
+    static var serverURL: String {
+        get { UserDefaults.standard.string(forKey: serverURLKey) ?? "" }
+        set { UserDefaults.standard.set(newValue, forKey: serverURLKey) }
+    }
+
+    static var adminToken: String {
+        get { readSecret(account: adminTokenAccount) ?? "" }
+        set { writeSecret(newValue, account: adminTokenAccount) }
+    }
+
+    private static func readSecret(account: String) -> String? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -18,7 +30,7 @@ enum KeychainSecretStore {
         return String(data: data, encoding: .utf8)
     }
 
-    static func write(_ value: String, account: String) {
+    private static func writeSecret(_ value: String, account: String) {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -28,22 +40,12 @@ enum KeychainSecretStore {
             SecItemDelete(query as CFDictionary)
             return
         }
-
         let attributes: [String: Any] = [kSecValueData as String: Data(value.utf8)]
         if SecItemUpdate(query as CFDictionary, attributes as CFDictionary) == errSecItemNotFound {
             var item = query
             item[kSecValueData as String] = Data(value.utf8)
-            item[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlock
+            item[kSecAttrAccessible as String] = kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly
             SecItemAdd(item as CFDictionary, nil)
         }
-    }
-
-    static func delete(account: String) {
-        let query: [String: Any] = [
-            kSecClass as String: kSecClassGenericPassword,
-            kSecAttrService as String: service,
-            kSecAttrAccount as String: account
-        ]
-        SecItemDelete(query as CFDictionary)
     }
 }
