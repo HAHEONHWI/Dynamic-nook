@@ -128,6 +128,33 @@ final class StoreTests: XCTestCase {
         XCTAssertEqual(settings.autoCloseDelay, 6)
     }
 
+    func testKeepAwakePreventsDisplaySleepByDefault() {
+        let suite = "NookKeepAwakeDefaultsTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = SettingsStore(defaults: defaults)
+
+        XCTAssertFalse(
+            settings.keepAwakeAllowDisplaySleep,
+            "Keep Awake must prevent display sleep unless the user explicitly opts out"
+        )
+    }
+
+    func testKeepAwakeDisplaySleepDefaultMigratesOnce() {
+        let suite = "NookKeepAwakeMigrationTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(true, forKey: "keepAwakeAllowDisplaySleep")
+
+        let migrated = SettingsStore(defaults: defaults)
+        XCTAssertFalse(migrated.keepAwakeAllowDisplaySleep)
+
+        migrated.keepAwakeAllowDisplaySleep = true
+        let restored = SettingsStore(defaults: defaults)
+        XCTAssertTrue(restored.keepAwakeAllowDisplaySleep, "Migration must not overwrite a later explicit choice")
+    }
+
     func testMediaPresentationTransitionIgnoresPauseAndResume() {
         let playing = MediaInfo(
             title: "Same Video",

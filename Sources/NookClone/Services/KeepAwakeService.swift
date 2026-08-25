@@ -40,7 +40,7 @@ final class KeepAwakeService {
 
     func start(
         minutes: Int?,
-        allowDisplaySleep: Bool = true,
+        allowDisplaySleep: Bool = false,
         allowClosedDisplaySleep: Bool = false,
         screenSaverMinutes: Int = 0,
         now: Date = .now

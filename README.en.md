@@ -12,9 +12,9 @@ Native macOS utility that turns the notch into customizable dashboards, system c
 
 ![macOS 14.6+](https://img.shields.io/badge/macOS-14.6%2B-111111?logo=apple)
 ![Swift 6](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)
-![Release](https://img.shields.io/badge/release-1.0.4-168BFF)
+![Release](https://img.shields.io/badge/release-1.0.5-168BFF)
 
-[![Download DMG](https://img.shields.io/badge/Download_DMG-1.0.4-0A84FF?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/HAHEONHWI/Dynamic-nook/releases/download/v1.0.4/Dynamic-Nook-1.0.4.dmg)
+[![Download DMG](https://img.shields.io/badge/Download_DMG-1.0.5-0A84FF?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/HAHEONHWI/Dynamic-nook/releases/download/v1.0.5/Dynamic-Nook-1.0.5.dmg)
 
 </div>
 
@@ -43,7 +43,7 @@ Native macOS utility that turns the notch into customizable dashboards, system c
 
 ## Install
 
-1. Download [Dynamic Nook 1.0.4 DMG](https://github.com/HAHEONHWI/Dynamic-nook/releases/download/v1.0.4/Dynamic-Nook-1.0.4.dmg).
+1. Download [Dynamic Nook 1.0.5 DMG](https://github.com/HAHEONHWI/Dynamic-nook/releases/download/v1.0.5/Dynamic-Nook-1.0.5.dmg).
 2. Open the DMG and drag **Dynamic Nook.app** into **Applications**.
 3. Launch Dynamic Nook and grant only the permissions needed by the widgets you use.
 
@@ -91,7 +91,7 @@ The run script builds a release-style app bundle in `dist/nook3h.app`, signs it 
 ./script/create_dmg.sh
 ```
 
-Output: `dist/Dynamic-Nook-1.0.4.dmg`
+Output: `dist/Dynamic-Nook-1.0.5.dmg`
 
 For a public direct-distribution build:
 
@@ -105,7 +105,7 @@ The script uses `Assets/DMG/DMGBackground.png`, creates a drag-to-Applications l
 
 ## Current status
 
-Dynamic Nook **1.0.4**. Core features work, but private-framework behavior, DDC/CI display support, hardware-specific sleep prevention, and unnotarized distribution can vary by Mac and macOS version.
+Dynamic Nook **1.0.5**. Core features work, but private-framework behavior, DDC/CI display support, hardware-specific sleep prevention, and unnotarized distribution can vary by Mac and macOS version.
 
 ## License
 

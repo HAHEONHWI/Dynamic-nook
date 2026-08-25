@@ -11,6 +11,7 @@ final class UtilityTimerStore {
     private(set) var elapsed: TimeInterval = 0
     private(set) var duration: TimeInterval = 300
     private var referenceDate: Date?
+    @ObservationIgnored var onCompletion: (() -> Void)?
     @ObservationIgnored private var ticker: Task<Void, Never>?
 
     init(mode: Mode = .countdown) {
@@ -35,7 +36,12 @@ final class UtilityTimerStore {
     func refresh(now: Date = .now) {
         guard isRunning else { return }
         elapsed = currentElapsed(now: now)
-        if mode == .countdown, elapsed >= duration { elapsed = duration; isRunning = false; referenceDate = nil }
+        if mode == .countdown, elapsed >= duration {
+            elapsed = duration
+            isRunning = false
+            referenceDate = nil
+            onCompletion?()
+        }
     }
     var displayedSeconds: Int { Int((mode == .countdown ? max(0, duration - elapsed) : elapsed).rounded(.down)) }
     var clockText: String { String(format: "%02d:%02d", displayedSeconds / 60, displayedSeconds % 60) }

@@ -108,9 +108,9 @@ cat >"$INFO_PLIST" <<PLIST
   <key>CFBundleLocalizations</key>
   <array><string>en</string><string>ko</string></array>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>1.0.4</string>
-  <key>CFBundleVersion</key><string>104</string>
-  <key>CFBundleGetInfoString</key><string>Dynamic Nook 1.0.4</string>
+  <key>CFBundleShortVersionString</key><string>1.0.5</string>
+  <key>CFBundleVersion</key><string>105</string>
+  <key>CFBundleGetInfoString</key><string>Dynamic Nook 1.0.5</string>
   <key>LSMinimumSystemVersion</key><string>$MIN_SYSTEM_VERSION</string>
   <key>NSPrincipalClass</key><string>NSApplication</string>
   <key>NSCalendarsFullAccessUsageDescription</key><string>nook3h shows your upcoming events in the notch calendar widget.</string>

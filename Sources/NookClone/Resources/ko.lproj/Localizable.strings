@@ -269,6 +269,7 @@
 "Paused" = "일시정지됨";
 "Complete" = "완료";
 "Focus complete" = "집중 완료";
+"Countdown complete" = "카운트다운 완료";
 
 "Weather" = "날씨";
 "Weather Details" = "날씨 세부 설정";
@@ -387,7 +388,7 @@
 "Public repositories" = "공개 저장소";
 "Followers" = "팔로워";
 "Contributions in the last year" = "최근 1년 기여";
-"Version 1.0.4" = "버전 1.0.4";
+"Version 1.0.5" = "버전 1.0.5";
 "License" = "라이선스";
 "Activate Dynamic Nook Pro offline" = "Dynamic Nook Pro를 오프라인으로 활성화합니다";
 "No active license" = "활성 라이선스 없음";

@@ -31,6 +31,7 @@ final class AppEnvironment {
     let cameraService = CameraService()
     let sharingService = SharingService()
     let haptics = HapticService()
+    let timerAlert = TimerAlertService()
     let focusTimerStore = FocusTimerStore()
     let countdownTimerStore = UtilityTimerStore(mode: .countdown)
     let stopwatchStore = UtilityTimerStore(mode: .stopwatch)
@@ -46,6 +47,13 @@ final class AppEnvironment {
         focusTimerStore.onCompletion = { [weak self] in
             guard let self else { return }
             liveActions.enqueue(LiveAction(icon: "timer", title: settings.localized("Focus complete"), priority: .important))
+            timerAlert.play()
+            haptics.perform(enabled: settings.enableHaptics, pattern: .levelChange)
+        }
+        countdownTimerStore.onCompletion = { [weak self] in
+            guard let self else { return }
+            liveActions.enqueue(LiveAction(icon: "timer", title: settings.localized("Countdown complete"), priority: .important))
+            timerAlert.play()
             haptics.perform(enabled: settings.enableHaptics, pattern: .levelChange)
         }
     }

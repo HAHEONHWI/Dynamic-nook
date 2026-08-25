@@ -154,7 +154,7 @@ final class SettingsStore {
             "allowNetworkDetails": false,
             "allowMarketData": false,
             "marketItems": ["fx:USD-KRW", "stock:AAPL"]
-            ,"keepAwakeAllowDisplaySleep": true
+            ,"keepAwakeAllowDisplaySleep": false
             ,"keepAwakeAllowClosedDisplaySleep": false
             ,"keepAwakeScreenSaverMinutes": 0
             ,"clipboardHistoryEnabled": true
@@ -284,6 +284,11 @@ final class SettingsStore {
             if !enabledWidgets.contains(.keepAwake) { enabledWidgets.append(.keepAwake) }
             appendWidgetsToPrimaryLayoutIfPresent([.keepAwake])
             defaults.set(1, forKey: "keepAwakeWidgetLayoutVersion")
+        }
+
+        if defaults.integer(forKey: "keepAwakeDisplaySleepDefaultVersion") < 1 {
+            keepAwakeAllowDisplaySleep = false
+            defaults.set(1, forKey: "keepAwakeDisplaySleepDefaultVersion")
         }
 
         if defaults.integer(forKey: "systemMonitorWidgetLayoutVersion") < 1 {
@@ -458,7 +463,7 @@ final class SettingsStore {
         allowNetworkDetails = false
         allowMarketData = false
         marketItems = [.currency(base: "USD", quote: "KRW"), .stock(symbol: "AAPL")]
-        keepAwakeAllowDisplaySleep = true
+        keepAwakeAllowDisplaySleep = false
         keepAwakeAllowClosedDisplaySleep = false
         keepAwakeScreenSaverMinutes = 0
         clipboardHistoryEnabled = true

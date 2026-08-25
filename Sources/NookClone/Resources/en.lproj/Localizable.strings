@@ -269,6 +269,7 @@
 "Paused" = "Paused";
 "Complete" = "Complete";
 "Focus complete" = "Focus complete";
+"Countdown complete" = "Countdown complete";
 
 "Weather" = "Weather";
 "Weather Details" = "Weather Details";
@@ -387,7 +388,7 @@
 "Public repositories" = "Public repositories";
 "Followers" = "Followers";
 "Contributions in the last year" = "Contributions in the last year";
-"Version 1.0.4" = "Version 1.0.4";
+"Version 1.0.5" = "Version 1.0.5";
 "License" = "License";
 "Activate Dynamic Nook Pro offline" = "Activate Dynamic Nook Pro offline";
 "No active license" = "No active license";

@@ -16,6 +16,20 @@ final class UtilityAndMarketTests: XCTestCase {
         XCTAssertFalse(store.isRunning)
     }
 
+    func testCountdownCompletionFiresOnlyOnce() {
+        let store = UtilityTimerStore()
+        let base = Date(timeIntervalSinceReferenceDate: 2_000)
+        var completions = 0
+        store.onCompletion = { completions += 1 }
+        store.setMinutes(1)
+        store.startPause(now: base)
+
+        store.refresh(now: base.addingTimeInterval(61))
+        store.refresh(now: base.addingTimeInterval(120))
+
+        XCTAssertEqual(completions, 1, "Countdown reaching zero must emit exactly one completion event")
+    }
+
     func testMarketItemStorageRoundTrip() {
         let item = MarketItem.currency(base: "USD", quote: "KRW")
         XCTAssertEqual(MarketItem(storageValue: item.storageValue), item)
