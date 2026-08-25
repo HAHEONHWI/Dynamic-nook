@@ -4,6 +4,7 @@ import SwiftUI
 @MainActor
 final class AppEnvironment {
     private var settingsWindowController: NSWindowController?
+    let settingsNavigation = SettingsNavigation()
     let appStore = AppStore()
     let settings = SettingsStore()
     let licenseStore = LicenseStore()
@@ -22,6 +23,7 @@ final class AppEnvironment {
     let automationPermissionService = AutomationPermissionService()
     let deviceStatusService = DeviceStatusService()
     let schoolService = SchoolService()
+    let schoolTimetableService = SchoolTimetableService()
     let calendarService = CalendarService()
     let reminderService = ReminderService()
     let shortcutService = ShortcutService()
@@ -48,7 +50,10 @@ final class AppEnvironment {
         }
     }
 
-    func openSettings() {
+    func openSettings(_ category: SettingsCategory? = nil) {
+        if let category {
+            settingsNavigation.selection = category
+        }
         if settingsWindowController == nil {
             let rootView = SettingsRootView(environment: self)
                 .environment(\.locale, settings.appLanguage.locale)

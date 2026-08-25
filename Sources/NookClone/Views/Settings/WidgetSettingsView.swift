@@ -208,6 +208,8 @@ struct WidgetSettingsView: View {
             weatherSettings
         case .school:
             schoolWidgetSettings
+        case .timetable:
+            timetableWidgetSettings
         case .network:
             networkSettings
         case .market:
@@ -397,7 +399,15 @@ struct WidgetSettingsView: View {
         SettingsCard {
             Text("School Widget").font(.headline)
             Text("School widget uses NEIS school, meal, and schedule settings.").font(.caption).foregroundStyle(.secondary)
-            Button("Open School Settings") { environment.openSettings() }
+            Button("Open School Settings") { environment.openSettings(.school) }
+        }
+    }
+
+    private var timetableWidgetSettings: some View {
+        SettingsCard {
+            Text("Timetable Widget").font(.headline)
+            Text("Timetable widget uses DGSW grade and class settings.").font(.caption).foregroundStyle(.secondary)
+            Button("Open School Settings") { environment.openSettings(.school) }
         }
     }
 

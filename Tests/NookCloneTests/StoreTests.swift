@@ -234,6 +234,43 @@ final class StoreTests: XCTestCase {
         XCTAssertTrue(restored.widgets(for: .nook1).isEmpty)
     }
 
+    func testSchoolTimetableClassSelectionPersists() {
+        let suite = "NookSchoolTimetableSettingsTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+
+        let settings = SettingsStore(defaults: defaults)
+        settings.schoolGrade = 2
+        settings.schoolClassNumber = 3
+
+        let restored = SettingsStore(defaults: defaults)
+        XCTAssertEqual(restored.schoolGrade, 2)
+        XCTAssertEqual(restored.schoolClassNumber, 3)
+    }
+
+    func testSchoolTimetableSplitMigrationPlacesTimetableAfterSchool() {
+        let suite = "NookSchoolTimetableSplitTests-\(UUID().uuidString)"
+        let defaults = UserDefaults(suiteName: suite)!
+        defer { defaults.removePersistentDomain(forName: suite) }
+        defaults.set(2, forKey: "layoutVersion")
+        defaults.set(2, forKey: "productivityWidgetsLayoutVersion")
+        defaults.set(1, forKey: "utilityTimerWidgetsLayoutVersion")
+        defaults.set(1, forKey: "keepAwakeWidgetLayoutVersion")
+        defaults.set(1, forKey: "systemMonitorWidgetLayoutVersion")
+        defaults.set(1, forKey: "desktopUtilityWidgetsLayoutVersion")
+        defaults.set([WidgetType.notes.rawValue, WidgetType.school.rawValue, WidgetType.weather.rawValue], forKey: "enabledWidgets")
+        defaults.set([
+            NookPage.nook1.id: [WidgetType.notes.rawValue, WidgetType.school.rawValue, WidgetType.weather.rawValue],
+            NookPage.nook2.id: [WidgetType.school.rawValue]
+        ], forKey: "widgetLayouts")
+
+        let settings = SettingsStore(defaults: defaults)
+
+        XCTAssertEqual(settings.widgets(for: .nook1), [.notes, .school, .timetable, .weather])
+        XCTAssertEqual(settings.widgets(for: .nook2), [.school, .timetable])
+        XCTAssertEqual(settings.cellSpan(for: .timetable), 3)
+    }
+
     func testProductivityWidgetMigrationPreservesExistingLayoutAndSettings() {
         let suite = "NookProductivityMigrationTests-\(UUID().uuidString)"
         let defaults = UserDefaults(suiteName: suite)!

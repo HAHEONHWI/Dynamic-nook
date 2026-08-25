@@ -108,9 +108,9 @@ cat >"$INFO_PLIST" <<PLIST
   <key>CFBundleLocalizations</key>
   <array><string>en</string><string>ko</string></array>
   <key>CFBundlePackageType</key><string>APPL</string>
-  <key>CFBundleShortVersionString</key><string>1.0.3</string>
-  <key>CFBundleVersion</key><string>103</string>
-  <key>CFBundleGetInfoString</key><string>Dynamic Nook 1.0.3</string>
+  <key>CFBundleShortVersionString</key><string>1.0.4</string>
+  <key>CFBundleVersion</key><string>104</string>
+  <key>CFBundleGetInfoString</key><string>Dynamic Nook 1.0.4</string>
   <key>LSMinimumSystemVersion</key><string>$MIN_SYSTEM_VERSION</string>
   <key>NSPrincipalClass</key><string>NSApplication</string>
   <key>NSCalendarsFullAccessUsageDescription</key><string>nook3h shows your upcoming events in the notch calendar widget.</string>
@@ -118,6 +118,21 @@ cat >"$INFO_PLIST" <<PLIST
   <key>NSLocationUsageDescription</key><string>nook3h uses your location to show local weather.</string>
   <key>NSCameraUsageDescription</key><string>nook3h uses the camera only while the Mirror widget is visible.</string>
   <key>NSAppleEventsUsageDescription</key><string>nook3h controls Apple Music when system media controls are unavailable.</string>
+  <key>NSAppTransportSecurity</key>
+  <dict>
+    <key>NSExceptionDomains</key>
+    <dict>
+      <key>comci.net</key>
+      <dict>
+        <key>NSExceptionAllowsInsecureHTTPLoads</key><true/>
+        <key>NSIncludesSubdomains</key><true/>
+      </dict>
+      <key>xn--s39aj90b0nb2xw6xh.kr</key>
+      <dict>
+        <key>NSExceptionAllowsInsecureHTTPLoads</key><true/>
+      </dict>
+    </dict>
+  </dict>
 </dict>
 </plist>
 PLIST

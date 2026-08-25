@@ -43,6 +43,45 @@ final class CalendarTests: XCTestCase {
         XCTAssertTrue(calendar.isDate(pair[1].date, inSameDayAs: calendar.date(byAdding: .day, value: 1, to: evening)!))
     }
 
+    func testComciTimetableParserUsesCurrentWeekOverrides() throws {
+        let json = #"""
+        {
+        "학급수":[12,4,4,4],
+        "자료111":[0,"김상*","허*","이도*","김철*","박찬*"],
+        "자료222":[0,"수학","네트","자바2","한국","직영"],
+        "자료333":[1,[1,[5,[2,1001,2002],[1,3003],[0],[0],[0]]]],
+        "자료444":[1,[1,[5,[2,">4004",2002],[1,3003],[0],[0],[0]]]]
+        }
+        """#
+
+        let days = try ComciTimetableParser.parse(
+            data: Data(json.utf8),
+            grade: 1,
+            classNumber: 1
+        )
+
+        XCTAssertEqual(days.count, 5)
+        XCTAssertEqual(days[0].periods.map(\.subject), ["한국", "네트"])
+        XCTAssertEqual(days[0].periods.map(\.teacher), ["김철*", "허*"])
+        XCTAssertEqual(days[0].periods.map(\.isChanged), [true, false])
+        XCTAssertEqual(days[1].periods.map(\.subject), ["자바2"])
+        XCTAssertEqual(days[1].periods.map(\.isChanged), [false])
+    }
+
+    func testComciTimetableParserRejectsMissingClass() throws {
+        let json = #"""
+        {
+        "자료111":["","김상*","박종*","이도*","김돈*","박찬*"],
+        "자료222":["","수학","네트","자바2","한국","직영"],
+        "자료333":[1,[1,[5,[1,1001],[0],[0],[0],[0]]]]
+        }
+        """#
+
+        XCTAssertThrowsError(
+            try ComciTimetableParser.parse(data: Data(json.utf8), grade: 2, classNumber: 1)
+        )
+    }
+
     func testReminderDateWindowAndSorting() throws {
         var calendar = Calendar(identifier: .gregorian)
         calendar.timeZone = try XCTUnwrap(TimeZone(identifier: "Asia/Seoul"))

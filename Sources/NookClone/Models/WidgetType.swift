@@ -10,6 +10,7 @@ enum WidgetType: String, CaseIterable, Codable, Identifiable, Sendable {
     case stopwatch
     case weather
     case school
+    case timetable
     case network
     case market
     case display
@@ -38,6 +39,7 @@ enum WidgetType: String, CaseIterable, Codable, Identifiable, Sendable {
         case .stopwatch: "Stopwatch"
         case .weather: "Weather"
         case .school: "School"
+        case .timetable: "Timetable"
         case .network: "Network"
         case .market: "Markets"
         case .display: "Display Control"
@@ -66,6 +68,7 @@ enum WidgetType: String, CaseIterable, Codable, Identifiable, Sendable {
         case .stopwatch: "stopwatch"
         case .weather: "cloud.sun.fill"
         case .school: "graduationcap.fill"
+        case .timetable: "calendar.day.timeline.left"
         case .network: "wifi"
         case .market: "chart.line.uptrend.xyaxis"
         case .display: "display.2"
@@ -83,7 +86,7 @@ enum WidgetType: String, CaseIterable, Codable, Identifiable, Sendable {
 
     var defaultCellSpan: Int {
         switch self {
-        case .calendar, .media, .notes, .reminders, .weather, .school, .network, .market, .display,
+        case .calendar, .media, .notes, .reminders, .weather, .school, .timetable, .network, .market, .display,
              .clipboard, .audioControl, .developer, .quickActions, .devices: 3
         case .shortcuts, .mirror, .timer, .countdown, .stopwatch, .keepAwake, .systemMonitor,
              .batteryPower, .windowLayout: 2

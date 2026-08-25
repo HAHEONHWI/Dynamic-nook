@@ -108,7 +108,18 @@ struct ExpandedNookView: View {
     }
 
     private func widgetWidth(_ widget: WidgetType, unitWidth: CGFloat) -> CGFloat {
-        let configuredWidth = unitWidth * CGFloat(environment.settings.cellSpan(for: widget))
+        Self.resolvedWidgetWidth(
+            for: widget,
+            unitWidth: unitWidth,
+            cellSpan: environment.settings.cellSpan(for: widget)
+        )
+    }
+
+    nonisolated static func resolvedWidgetWidth(for widget: WidgetType, unitWidth: CGFloat, cellSpan: Int) -> CGFloat {
+        if widget == .timetable {
+            return 86 * CGFloat(cellSpan)
+        }
+        let configuredWidth = unitWidth * CGFloat(cellSpan)
         return widget == .calendar ? max(260, configuredWidth) : configuredWidth
     }
 
@@ -151,6 +162,8 @@ struct ExpandedNookView: View {
                 WeatherWidgetView(service: environment.weatherService, settings: environment.settings)
             case .school:
                 SchoolWidgetView(environment: environment)
+            case .timetable:
+                TimetableWidgetView(environment: environment)
             case .network:
                 NetworkWidgetView(service: environment.networkService, settings: environment.settings)
             case .market:

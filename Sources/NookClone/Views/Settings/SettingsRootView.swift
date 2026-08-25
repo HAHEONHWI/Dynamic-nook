@@ -1,4 +1,5 @@
 import SwiftUI
+import Observation
 
 enum SettingsCategory: String, CaseIterable, Identifiable {
     case general = "General"
@@ -30,13 +31,19 @@ enum SettingsCategory: String, CaseIterable, Identifiable {
     }
 }
 
+@MainActor
+@Observable
+final class SettingsNavigation {
+    var selection: SettingsCategory? = .widgets
+}
+
 struct SettingsRootView: View {
     let environment: AppEnvironment
-    @State private var selection: SettingsCategory? = .widgets
 
     var body: some View {
+        @Bindable var navigation = environment.settingsNavigation
         NavigationSplitView {
-            List(SettingsCategory.allCases, selection: $selection) { category in
+            List(SettingsCategory.allCases, selection: $navigation.selection) { category in
                 Label {
                     Text(LocalizedStringKey(category.rawValue))
                 } icon: {
@@ -57,7 +64,7 @@ struct SettingsRootView: View {
 
     @ViewBuilder
     private var detail: some View {
-        switch selection ?? .widgets {
+        switch environment.settingsNavigation.selection ?? .widgets {
         case .general:
             GeneralSettingsView(environment: environment)
         case .appearance:

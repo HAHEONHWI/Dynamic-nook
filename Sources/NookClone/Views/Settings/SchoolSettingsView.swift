@@ -7,7 +7,39 @@ struct SchoolSettingsView: View {
     var body: some View {
         @Bindable var settings = environment.settings
 
-        SettingsDetailContainer(title: "School", subtitle: "NEIS meals and academic schedule") {
+        SettingsDetailContainer(title: "School", subtitle: "DGSW timetable, NEIS meals and academic schedule") {
+            SettingsCard {
+                Label("DGSW Timetable", systemImage: "calendar.day.timeline.left")
+                    .font(.headline)
+                Text("Select your grade and class. Timetable data comes from Comcigan and includes current-week changes.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+                HStack {
+                    Picker("Grade", selection: $settings.schoolGrade) {
+                        ForEach(1...3, id: \.self) { Text("\($0)").tag($0) }
+                    }
+                    Picker("Class", selection: $settings.schoolClassNumber) {
+                        ForEach(1...4, id: \.self) { Text("\($0)").tag($0) }
+                    }
+                    Button("Check Timetable") {
+                        Task {
+                            await environment.schoolTimetableService.refresh(
+                                grade: settings.schoolGrade,
+                                classNumber: settings.schoolClassNumber
+                            )
+                        }
+                    }
+                }
+                .pickerStyle(.menu)
+                if environment.schoolTimetableService.isLoading {
+                    ProgressView().controlSize(.small)
+                } else if !environment.schoolTimetableService.days.isEmpty {
+                    Label("Timetable loaded", systemImage: "checkmark.circle.fill")
+                        .font(.caption)
+                        .foregroundStyle(.green)
+                }
+            }
+
             SettingsCard {
                 SecureField("NEIS API key (optional)", text: $settings.neisAPIKey)
                 Text("The API key is stored in macOS Keychain, not in source code or UserDefaults.")
@@ -56,6 +88,9 @@ struct SchoolSettingsView: View {
             }
 
             if let error = environment.schoolService.errorMessage {
+                Text(error).font(.caption).foregroundStyle(.red)
+            }
+            if let error = environment.schoolTimetableService.errorMessage {
                 Text(error).font(.caption).foregroundStyle(.red)
             }
         }

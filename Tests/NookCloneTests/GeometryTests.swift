@@ -3,6 +3,17 @@ import XCTest
 @testable import NookClone
 
 final class GeometryTests: XCTestCase {
+    func testTimetableWidthFollowsSelectedCellSpan() {
+        XCTAssertEqual(ExpandedNookView.resolvedWidgetWidth(for: .timetable, unitWidth: 150, cellSpan: 1), 86)
+        XCTAssertEqual(ExpandedNookView.resolvedWidgetWidth(for: .timetable, unitWidth: 150, cellSpan: 2), 172)
+        XCTAssertEqual(ExpandedNookView.resolvedWidgetWidth(for: .timetable, unitWidth: 100, cellSpan: 3), 258)
+    }
+
+    func testTimetableUsesCompactControlsAtOneCellWidth() {
+        XCTAssertTrue(TimetableWidgetView.usesCompactLayout(availableWidth: 70))
+        XCTAssertFalse(TimetableWidgetView.usesCompactLayout(availableWidth: 156))
+    }
+
     func testNookMotionDurationClampsAnimationSpeed() {
         XCTAssertEqual(NookMotion.duration(speed: 1), 0.42, accuracy: 0.0001)
         XCTAssertEqual(NookMotion.duration(speed: 0.1), 0.42 / 0.65, accuracy: 0.0001)

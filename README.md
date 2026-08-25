@@ -12,9 +12,9 @@ MacBook 노치를 사용자 지정 대시보드, 시스템 제어 공간, 임시
 
 ![macOS 14.6+](https://img.shields.io/badge/macOS-14.6%2B-111111?logo=apple)
 ![Swift 6](https://img.shields.io/badge/Swift-6-F05138?logo=swift&logoColor=white)
-![Release](https://img.shields.io/badge/release-1.0.3-168BFF)
+![Release](https://img.shields.io/badge/release-1.0.4-168BFF)
 
-[![DMG 다운로드](https://img.shields.io/badge/DMG_다운로드-1.0.3-0A84FF?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/HAHEONHWI/Dynamic-nook/releases/download/v1.0.3/Dynamic-Nook-1.0.3.dmg)
+[![DMG 다운로드](https://img.shields.io/badge/DMG_다운로드-1.0.4-0A84FF?style=for-the-badge&logo=apple&logoColor=white)](https://github.com/HAHEONHWI/Dynamic-nook/releases/download/v1.0.4/Dynamic-Nook-1.0.4.dmg)
 
 </div>
 
@@ -34,7 +34,7 @@ MacBook 노치를 사용자 지정 대시보드, 시스템 제어 공간, 임시
 | 생산성 | 시스템 | 정보 |
 | --- | --- | --- |
 | 캘린더와 가장 가까운 다음 일정 | 미디어 플레이어 | 날씨와 6시간 예보 |
-| 미리 알림과 빠른 추가 | 오디오 출력·볼륨 | NEIS 급식·학교 일정 |
+| 미리 알림과 빠른 추가 | 오디오 출력·볼륨 | 컴시간 시간표 / NEIS 급식·학교 일정 |
 | 집중 타이머 | 디스플레이 제어 | 네트워크·Wi-Fi·VPN·공인 IP |
 | 일반 타이머·스톱워치 | 잠자기 방지 | 환율·국내·미국 주식 |
 | 마크다운 메모 | CPU·메모리·디스크 사용량 | GitHub 잔디·로컬 Git 상태 |
@@ -43,7 +43,7 @@ MacBook 노치를 사용자 지정 대시보드, 시스템 제어 공간, 임시
 
 ## 설치
 
-1. [Dynamic Nook 1.0.3 DMG 다운로드](https://github.com/HAHEONHWI/Dynamic-nook/releases/download/v1.0.3/Dynamic-Nook-1.0.3.dmg)를 누릅니다.
+1. [Dynamic Nook 1.0.4 DMG 다운로드](https://github.com/HAHEONHWI/Dynamic-nook/releases/download/v1.0.4/Dynamic-Nook-1.0.4.dmg)를 누릅니다.
 2. DMG를 열고 **Dynamic Nook.app**을 **Applications**로 드래그합니다.
 3. Dynamic Nook를 실행하고 사용하는 위젯에 필요한 권한만 허용합니다.
 
@@ -70,7 +70,7 @@ MacBook 노치를 사용자 지정 대시보드, 시스템 제어 공간, 임시
 - Swift 6, SwiftUI, AppKit, SwiftPM
 - macOS 14.6 이상
 - EventKit, CoreLocation, CoreAudio, IOKit, Accessibility, CoreWLAN
-- 날씨: Open-Meteo, 학교 정보: NEIS
+- 날씨: Open-Meteo, 학교 정보: 컴시간 알리미·NEIS
 - 주식: Yahoo Finance 차트 데이터, 환율: Frankfurter
 - macOS System Now Playing: 런타임에 불러오는 `MediaRemote.framework`
 
@@ -91,7 +91,7 @@ DEVELOPER_DIR=/Applications/Xcode.app/Contents/Developer xcrun swift test
 ./script/create_dmg.sh
 ```
 
-산출물: `dist/Dynamic-Nook-1.0.3.dmg`
+산출물: `dist/Dynamic-Nook-1.0.4.dmg`
 
 공개 직접 배포용 빌드:
 
@@ -105,7 +105,7 @@ NOTARY_PROFILE="notarytool-profile" \
 
 ## 현재 상태
 
-Dynamic Nook **1.0.3**입니다. 핵심 기능은 동작하지만 Private Framework, DDC/CI 디스플레이, 하드웨어별 덮개 잠자기 방지, 미공증 배포 동작은 Mac과 macOS 버전에 따라 달라질 수 있습니다.
+Dynamic Nook **1.0.4**입니다. 핵심 기능은 동작하지만 Private Framework, DDC/CI 디스플레이, 하드웨어별 덮개 잠자기 방지, 미공증 배포 동작은 Mac과 macOS 버전에 따라 달라질 수 있습니다.
 
 ## 라이선스
 

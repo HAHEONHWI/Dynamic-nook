@@ -71,6 +71,8 @@ final class SettingsStore {
     var neisEducationOfficeCode: String { didSet { save(neisEducationOfficeCode, "neisEducationOfficeCode") } }
     var neisSchoolCode: String { didSet { save(neisSchoolCode, "neisSchoolCode") } }
     var neisSchoolName: String { didSet { save(neisSchoolName, "neisSchoolName") } }
+    var schoolGrade: Int { didSet { save(schoolGrade, "schoolGrade") } }
+    var schoolClassNumber: Int { didSet { save(schoolClassNumber, "schoolClassNumber") } }
     var maximumReminders: Int { didSet { save(maximumReminders, "maximumReminders") } }
     var selectedReminderListIdentifiers: [String] { didSet { save(selectedReminderListIdentifiers, "selectedReminderListIdentifiers") } }
     var defaultFocusMinutes: Int { didSet { save(defaultFocusMinutes, "defaultFocusMinutes") } }
@@ -142,6 +144,8 @@ final class SettingsStore {
             "neisEducationOfficeCode": "",
             "neisSchoolCode": "",
             "neisSchoolName": "",
+            "schoolGrade": 1,
+            "schoolClassNumber": 1,
             "maximumReminders": 6,
             "selectedReminderListIdentifiers": [String](),
             "defaultFocusMinutes": 25,
@@ -218,6 +222,8 @@ final class SettingsStore {
         neisEducationOfficeCode = defaults.string(forKey: "neisEducationOfficeCode") ?? ""
         neisSchoolCode = defaults.string(forKey: "neisSchoolCode") ?? ""
         neisSchoolName = defaults.string(forKey: "neisSchoolName") ?? ""
+        schoolGrade = min(max(defaults.integer(forKey: "schoolGrade"), 1), 3)
+        schoolClassNumber = min(max(defaults.integer(forKey: "schoolClassNumber"), 1), 4)
         maximumReminders = defaults.integer(forKey: "maximumReminders")
         selectedReminderListIdentifiers = defaults.stringArray(forKey: "selectedReminderListIdentifiers") ?? []
         defaultFocusMinutes = defaults.integer(forKey: "defaultFocusMinutes")
@@ -291,6 +297,21 @@ final class SettingsStore {
             for widget in additions where !enabledWidgets.contains(widget) { enabledWidgets.append(widget) }
             appendWidgetsToPrimaryLayoutIfPresent(additions)
             defaults.set(1, forKey: "desktopUtilityWidgetsLayoutVersion")
+        }
+
+        if defaults.integer(forKey: "schoolTimetableSplitVersion") < 1 {
+            if let schoolIndex = enabledWidgets.firstIndex(of: .school),
+               !enabledWidgets.contains(.timetable) {
+                enabledWidgets.insert(.timetable, at: schoolIndex + 1)
+            }
+            for pageID in Array(widgetLayouts.keys) {
+                guard var layout = widgetLayouts[pageID],
+                      let schoolIndex = layout.firstIndex(of: WidgetType.school.rawValue),
+                      !layout.contains(WidgetType.timetable.rawValue) else { continue }
+                layout.insert(WidgetType.timetable.rawValue, at: schoolIndex + 1)
+                widgetLayouts[pageID] = layout
+            }
+            defaults.set(1, forKey: "schoolTimetableSplitVersion")
         }
 
         if isFreshWidgetConfiguration {
@@ -427,6 +448,8 @@ final class SettingsStore {
         neisEducationOfficeCode = ""
         neisSchoolCode = ""
         neisSchoolName = ""
+        schoolGrade = 1
+        schoolClassNumber = 1
         maximumReminders = 6
         selectedReminderListIdentifiers = []
         defaultFocusMinutes = 25
